@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  deploymentId: process.env.RENDER_GIT_COMMIT || process.env.NODE_ENV,
   images: {
     remotePatterns: [
       {

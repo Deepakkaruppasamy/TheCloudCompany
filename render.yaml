@@ -23,6 +23,8 @@ services:
         value: "48"
       - key: NEXT_PUBLIC_APP_URL
         value: "https://thecloudcompany.onrender.com"
+      - key: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+        value: "AExJOKR8lSXgkKX3HEH4aqdBL8JwxLBr7Oma3OGpSr8="
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
