@@ -331,3 +331,4 @@ FOR SELECT TO authenticated USING (auth.uid() = user_id);
 * [ ] Every bid, extension, proxy, and closure locks the auction row first, and evaluates clock only after acquiring the lock.
 * [ ] All money stored as integer paise.
 * [ ] Full regression suite passes before every release merge.
+
