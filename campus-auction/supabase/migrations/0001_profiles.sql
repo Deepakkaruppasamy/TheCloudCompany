@@ -21,7 +21,7 @@ ALTER TABLE system_config ENABLE ROW LEVEL SECURITY;
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT NOT NULL CHECK (char_length(btrim(display_name)) BETWEEN 2 AND 60),
-  role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+  role TEXT NOT NULL DEFAULT 'buyer' CHECK (role IN ('buyer', 'seller', 'student', 'admin')),
   is_verified BOOLEAN NOT NULL DEFAULT TRUE,
   account_status TEXT NOT NULL DEFAULT 'active' CHECK (account_status IN ('active', 'suspended')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
@@ -40,15 +40,17 @@ CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp AS $$
 BEGIN
-  INSERT INTO profiles (id, display_name, is_verified, account_status)
+  INSERT INTO profiles (id, display_name, role, is_verified, account_status)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'buyer'),
     TRUE,
     'active'
   )
   ON CONFLICT (id) DO UPDATE
-    SET display_name = COALESCE(EXCLUDED.display_name, profiles.display_name);
+    SET display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
+        role = COALESCE(EXCLUDED.role, profiles.role);
   RETURN NEW;
 END;
 $$;

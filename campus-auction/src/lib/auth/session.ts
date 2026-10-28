@@ -5,6 +5,9 @@
  */
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import type { Database } from "@/types/database";
+
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 /** Returns the current authenticated user or redirects to sign-in. */
 export async function requireUser() {
@@ -40,9 +43,9 @@ export async function getUserProfile() {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, display_name, role, is_verified, account_status")
+    .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  return data;
+  return data ? (data as unknown as Profile) : null;
 }

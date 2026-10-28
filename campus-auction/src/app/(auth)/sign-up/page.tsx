@@ -12,6 +12,7 @@ export default function SignUpPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"buyer" | "seller">("buyer");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -37,7 +38,10 @@ export default function SignUpPage() {
       email: email.trim(),
       password,
       options: {
-        data: { display_name: displayName.trim() },
+        data: {
+          display_name: displayName.trim(),
+          role,
+        },
       },
     });
 
@@ -48,8 +52,9 @@ export default function SignUpPage() {
     }
 
     if (authData.session) {
-      // Auto-signed in! Redirect directly into the app
-      window.location.href = "/";
+      // Auto-signed in! Redirect directly to corresponding dashboard
+      const targetDashboard = role === "seller" ? "/dashboard/seller" : "/dashboard/winner";
+      window.location.href = targetDashboard;
       return;
     }
 
@@ -101,6 +106,40 @@ export default function SignUpPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Account Type Selection */}
+            <div>
+              <label className="label">I want to *</label>
+              <div className="grid grid-cols-2 gap-3 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setRole("buyer")}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    role === "buyer"
+                      ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
+                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  <span className="text-xl block mb-1">🛒</span>
+                  <p className="text-sm font-semibold text-white">Buyer</p>
+                  <p className="text-xs text-white/50">Bid on campus items</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRole("seller")}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    role === "seller"
+                      ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
+                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  <span className="text-xl block mb-1">🏷️</span>
+                  <p className="text-sm font-semibold text-white">Seller</p>
+                  <p className="text-xs text-white/50">List items for auction</p>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label htmlFor="display-name" className="label">
                 Display Name

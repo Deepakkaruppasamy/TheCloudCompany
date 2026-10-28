@@ -42,6 +42,20 @@ export default function SignInPage() {
     }
 
     if (data.session) {
+      if (next === "/" && data.user) {
+        // Direct to their dedicated role dashboard if no specific page was requested
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        const role = (profile as { role?: string } | null)?.role;
+        if (role === "seller") {
+          window.location.href = "/dashboard/seller";
+          return;
+        }
+      }
       // Full reload so all server components and middleware sync with the session cookie immediately
       window.location.href = next;
     } else {

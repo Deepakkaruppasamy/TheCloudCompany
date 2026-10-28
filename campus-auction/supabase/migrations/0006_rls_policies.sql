@@ -4,17 +4,15 @@ CREATE POLICY "profiles_select_own" ON profiles
   FOR SELECT TO authenticated
   USING (auth.uid() = id);
 
--- Only display_name update
-CREATE POLICY "profiles_update_own_display_name" ON profiles
+-- Allow display_name and role update
+CREATE POLICY "profiles_update_own" ON profiles
   FOR UPDATE TO authenticated
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- Revoke dangerous columns from direct update (role, is_verified, account_status cannot be client-updated)
--- This is enforced by the Update type in database.ts having only display_name,
--- and by column-level grants below.
+-- Grant update on display_name and role to authenticated
 REVOKE UPDATE ON profiles FROM authenticated;
-GRANT UPDATE (display_name) ON profiles TO authenticated;
+GRANT UPDATE (display_name, role) ON profiles TO authenticated;
 GRANT SELECT ON profiles TO authenticated;
 
 -- ── Auctions RLS ─────────────────────────────────────────────────────────────

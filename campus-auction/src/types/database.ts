@@ -20,7 +20,7 @@ export interface Database {
         Row: {
           id: string;
           display_name: string;
-          role: "student" | "admin";
+          role: "buyer" | "seller" | "student" | "admin";
           is_verified: boolean;
           account_status: "active" | "suspended";
           created_at: string;
@@ -29,7 +29,7 @@ export interface Database {
         Insert: {
           id: string;
           display_name: string;
-          role?: "student" | "admin";
+          role?: "buyer" | "seller" | "student" | "admin";
           is_verified?: boolean;
           account_status?: "active" | "suspended";
           created_at?: string;
@@ -37,6 +37,7 @@ export interface Database {
         };
         Update: {
           display_name?: string;
+          role?: "buyer" | "seller" | "student" | "admin";
         };
       };
       system_config: {

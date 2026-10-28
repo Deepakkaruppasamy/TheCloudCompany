@@ -24,13 +24,20 @@ export default function NavBar({ user }: NavBarProps) {
     window.location.href = "/sign-in";
   };
 
+  const userRole = user?.user_metadata?.role;
+  const isSeller = userRole === "seller";
+
   const navLinks = user
     ? [
         { href: "/", label: "Browse" },
-        { href: "/my-listings", label: "My Listings" },
-        { href: "/dashboard/seller", label: "Seller" },
-        { href: "/dashboard/winner", label: "Won" },
+        ...(isSeller
+          ? [
+              { href: "/my-listings", label: "My Listings" },
+              { href: "/dashboard/seller", label: "Seller Dashboard" },
+            ]
+          : [{ href: "/dashboard/winner", label: "Won Items" }]),
         { href: "/notifications", label: "Notifications" },
+        { href: "/profile", label: "Profile" },
       ]
     : [];
 
@@ -70,15 +77,23 @@ export default function NavBar({ user }: NavBarProps) {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <span className="hidden lg:inline-block text-xs text-white/50 bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/10">
-                  👤 {user.user_metadata?.display_name || user.email?.split("@")[0]}
-                </span>
                 <Link
-                  href="/auctions/new"
-                  className="btn btn-primary btn-sm hidden sm:flex"
+                  href="/profile"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 transition-colors"
                 >
-                  + List Item
+                  <span>{isSeller ? "🏷️" : "🛒"}</span>
+                  <span className="font-medium">
+                    {user.user_metadata?.display_name || user.email?.split("@")[0]}
+                  </span>
                 </Link>
+                {isSeller && (
+                  <Link
+                    href="/auctions/new"
+                    className="btn btn-primary btn-sm hidden md:flex"
+                  >
+                    + List Item
+                  </Link>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="btn btn-ghost btn-sm"
