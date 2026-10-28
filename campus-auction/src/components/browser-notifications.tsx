@@ -68,15 +68,15 @@ export default function BrowserNotifications({
     }
   }, []);
 
-  // Subscribe to real-time notifications for the signed-in student
+  // Subscribe to real-time notifications for the signed-in student (only in listener mode to avoid duplicate channel conflicts)
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || variant === "banner") return;
 
     const supabase = createClient();
+    const channelName = `user-notifs-${userId}-${Math.random().toString(36).slice(2, 7)}`;
+    const channel = supabase.channel(channelName);
 
-    // 1. Supabase Realtime Channel
-    const channel = supabase
-      .channel(`user-notifications-${userId}`)
+    channel
       .on(
         "postgres_changes",
         {
@@ -121,10 +121,11 @@ export default function BrowserNotifications({
     }, 20_000);
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [userId, showPopup]);
+  }, [userId, variant, showPopup]);
 
   if (!supported || !userId || variant === "listener") {
     return null;
