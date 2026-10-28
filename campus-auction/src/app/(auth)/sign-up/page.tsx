@@ -2,11 +2,12 @@
 /**
  * src/app/(auth)/sign-up/page.tsx
  *
- * Sign-up page — creates a new account via Supabase auth with a display name.
+ * Modern sign-up page with dedicated Buyer vs. Seller account selection.
  */
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { IconShieldCheck, IconCheck } from "@/components/ui/icons";
 
 export default function SignUpPage() {
   const [displayName, setDisplayName] = useState("");
@@ -65,18 +66,17 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 mb-6">
-            <span className="text-3xl">✉️</span>
+      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md text-center glass p-8 sm:p-10 rounded-3xl border border-white/[0.1] bg-[#12131e]/90 shadow-2xl">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-3xl mb-5">
+            ✉️
           </div>
-          <h2 className="text-2xl font-display font-bold text-white mb-3">Check your email</h2>
-          <p className="text-white/60 mb-6">
+          <h2 className="text-2xl font-display font-extrabold text-white mb-2">Check your email</h2>
+          <p className="text-white/60 text-sm mb-6 leading-relaxed">
             We&apos;ve sent a confirmation link to{" "}
-            <span className="text-white font-medium">{email}</span>. Click the link to activate your
-            account.
+            <span className="text-white font-semibold">{email}</span>. Click the link to complete registration.
           </p>
-          <Link href="/sign-in" className="btn btn-secondary btn-md">
+          <Link href="/sign-in" className="btn btn-secondary btn-md w-full">
             Back to Sign In
           </Link>
         </div>
@@ -85,19 +85,23 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500/20 border border-brand-500/30 mb-4">
-            <span className="text-2xl">🎓</span>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white text-2xl shadow-lg shadow-brand-900/50 mb-4 border border-brand-400/30">
+            🎓
           </div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Create account</h1>
-          <p className="text-white/50 text-sm">Join Campus Auction today</p>
+          <h1 className="text-3xl font-display font-extrabold text-white tracking-tight">
+            Create an Account
+          </h1>
+          <p className="text-white/50 text-sm mt-1.5">
+            Join the verified campus auction community
+          </p>
         </div>
 
         {/* Card */}
-        <div className="glass p-8 space-y-6">
+        <div className="glass p-7 sm:p-8 space-y-6 rounded-3xl border border-white/[0.1] bg-[#12131e]/80 shadow-2xl">
           {error && (
             <div className="alert-error animate-slide-down" role="alert">
               <span aria-hidden="true">⚠️</span>
@@ -105,44 +109,58 @@ export default function SignUpPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Account Type Selection */}
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            {/* Account Role Selector */}
             <div>
-              <label className="label">I want to *</label>
-              <div className="grid grid-cols-2 gap-3 mt-1">
+              <label className="label">Select Account Role *</label>
+              <div className="grid grid-cols-2 gap-3 mt-1.5">
                 <button
                   type="button"
                   onClick={() => setRole("buyer")}
-                  className={`p-3 rounded-xl border text-left transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all relative ${
                     role === "buyer"
-                      ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
-                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                      ? "bg-brand-500/20 border-brand-400/60 shadow-lg shadow-brand-900/30 ring-1 ring-brand-400/50"
+                      : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]"
                   }`}
                 >
-                  <span className="text-xl block mb-1">🛒</span>
-                  <p className="text-sm font-semibold text-white">Buyer</p>
-                  <p className="text-xs text-white/50">Bid on campus items</p>
+                  {role === "buyer" && (
+                    <span className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center text-[10px] text-white">
+                      ✓
+                    </span>
+                  )}
+                  <span className="text-2xl block mb-1">🛒</span>
+                  <p className="text-sm font-bold text-white">Buyer</p>
+                  <p className="text-[11px] text-white/50 leading-tight mt-0.5">
+                    Bid & pickup campus items
+                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setRole("seller")}
-                  className={`p-3 rounded-xl border text-left transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all relative ${
                     role === "seller"
-                      ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
-                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                      ? "bg-purple-500/20 border-purple-400/60 shadow-lg shadow-purple-900/30 ring-1 ring-purple-400/50"
+                      : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]"
                   }`}
                 >
-                  <span className="text-xl block mb-1">🏷️</span>
-                  <p className="text-sm font-semibold text-white">Seller</p>
-                  <p className="text-xs text-white/50">List items for auction</p>
+                  {role === "seller" && (
+                    <span className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-[10px] text-white">
+                      ✓
+                    </span>
+                  )}
+                  <span className="text-2xl block mb-1">🏷️</span>
+                  <p className="text-sm font-bold text-white">Seller</p>
+                  <p className="text-[11px] text-white/50 leading-tight mt-0.5">
+                    List & sell to campus peers
+                  </p>
                 </button>
               </div>
             </div>
 
             <div>
               <label htmlFor="display-name" className="label">
-                Display Name
+                Display Name (Visible to peers)
               </label>
               <input
                 id="display-name"
@@ -153,7 +171,7 @@ export default function SignUpPage() {
                 minLength={2}
                 maxLength={50}
                 className="input"
-                placeholder="Your name on campus"
+                placeholder="e.g. Alex Chen"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 disabled={isPending}
@@ -162,7 +180,7 @@ export default function SignUpPage() {
 
             <div>
               <label htmlFor="email" className="label">
-                Email address
+                Campus Email
               </label>
               <input
                 id="email"
@@ -199,22 +217,30 @@ export default function SignUpPage() {
 
             <button
               type="submit"
-              className="btn btn-primary btn-lg w-full"
+              className="btn btn-primary btn-lg w-full font-bold shadow-lg shadow-brand-900/40 mt-3"
               disabled={isPending}
             >
-              {isPending ? "Creating account…" : "Create Account"}
+              {isPending ? "Setting up account…" : "Complete Registration"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-white/50">
-            Already have an account?{" "}
-            <Link
-              href="/sign-in"
-              className="text-brand-400 hover:text-brand-300 font-medium transition-colors"
-            >
-              Sign in
-            </Link>
-          </p>
+          <div className="pt-4 border-t border-white/[0.08] text-center">
+            <p className="text-xs text-white/50">
+              Already have an account?{" "}
+              <Link
+                href="/sign-in"
+                className="text-brand-300 hover:text-brand-200 font-semibold transition-colors ml-1"
+              >
+                Sign in →
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Security footer note */}
+        <div className="flex items-center justify-center gap-1.5 text-[11px] text-white/30 mt-6">
+          <IconShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Real-time instant campus account activation</span>
         </div>
       </div>
     </div>

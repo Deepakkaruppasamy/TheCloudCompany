@@ -69,13 +69,20 @@ export async function createAuction(
 ): Promise<ActionResult<{ id: string }>> {
   await requireUser();
 
+  const startingPricePaise =
+    Number(formData.get("startingPricePaise")) ||
+    Math.round(Number(formData.get("startingPriceRupees")) * 100);
+  const minimumIncrementPaise =
+    Number(formData.get("minimumIncrementPaise")) ||
+    Math.round(Number(formData.get("minimumIncrementRupees")) * 100);
+
   const raw = {
     title: formData.get("title"),
     description: formData.get("description"),
     category: formData.get("category"),
     condition: formData.get("condition"),
-    startingPricePaise: Number(formData.get("startingPricePaise")),
-    minimumIncrementPaise: Number(formData.get("minimumIncrementPaise")),
+    startingPricePaise,
+    minimumIncrementPaise,
     opensAt: formData.get("opensAt"),
     closesAt: formData.get("closesAt"),
     photoPath: formData.get("photoPath") || null,

@@ -47,33 +47,33 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
 
       {/* Account Type Toggle */}
       <div>
-        <label className="label">Primary Role / Account Type</label>
+        <label className="label">Primary Role / Account Focus</label>
         <div className="grid grid-cols-2 gap-3 mt-1.5">
           <button
             type="button"
             onClick={() => setRole("buyer")}
-            className={`p-4 rounded-xl border text-left transition-all ${
+            className={`p-4 rounded-2xl border text-left transition-all ${
               role === "buyer"
-                ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
-                : "bg-white/5 border-white/10 hover:bg-white/10"
+                ? "bg-brand-500/20 border-brand-400 ring-1 ring-brand-400/50 shadow-md shadow-brand-900/30"
+                : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]"
             }`}
           >
             <span className="text-2xl block mb-1">🛒</span>
-            <p className="font-semibold text-white">Buyer</p>
+            <p className="font-bold text-white text-sm">Buyer</p>
             <p className="text-xs text-white/50 mt-0.5">Focus on finding and bidding on items</p>
           </button>
 
           <button
             type="button"
             onClick={() => setRole("seller")}
-            className={`p-4 rounded-xl border text-left transition-all ${
+            className={`p-4 rounded-2xl border text-left transition-all ${
               role === "seller"
-                ? "bg-brand-500/20 border-brand-400 ring-2 ring-brand-500/30"
-                : "bg-white/5 border-white/10 hover:bg-white/10"
+                ? "bg-purple-500/20 border-purple-400 ring-1 ring-purple-400/50 shadow-md shadow-purple-900/30"
+                : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]"
             }`}
           >
             <span className="text-2xl block mb-1">🏷️</span>
-            <p className="font-semibold text-white">Seller</p>
+            <p className="font-bold text-white text-sm">Seller</p>
             <p className="text-xs text-white/50 mt-0.5">Focus on listing auctions and managing sales</p>
           </button>
         </div>
@@ -82,7 +82,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
       {/* Display Name */}
       <div>
         <label htmlFor="displayName" className="label">
-          Display Name
+          Public Display Name
         </label>
         <input
           id="displayName"
@@ -95,31 +95,31 @@ export default function ProfileForm({ profile, email }: { profile: Profile; emai
           required
           disabled={isPending}
         />
-        <p className="text-xs text-white/40 mt-1.5">
-          This name is shown publicly on your listings and bids.
+        <p className="text-[11px] text-white/40 mt-1">
+          This name is shown publicly to other campus members on listings and bid histories.
         </p>
       </div>
 
       {/* Email (Read-only) */}
       <div>
-        <label className="label">Email Address (Account ID)</label>
+        <label className="label">Email Address (Secured ID)</label>
         <input
           type="text"
           value={email}
           disabled
-          className="input opacity-60 cursor-not-allowed bg-white/3"
+          className="input opacity-60 cursor-not-allowed bg-black/30"
         />
-        <p className="text-xs text-white/40 mt-1.5">
-          Email addresses remain strictly private and are never shown publicly to other students.
+        <p className="text-[11px] text-white/40 mt-1">
+          Your campus email remains private and is only used for authentication and critical transaction notices.
         </p>
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="btn btn-primary btn-md w-full sm:w-auto"
+        className="btn btn-primary btn-md font-bold"
       >
-        {isPending ? "Saving..." : "Save Profile Changes"}
+        {isPending ? "Saving changes…" : "Save Profile Changes"}
       </button>
     </form>
   );

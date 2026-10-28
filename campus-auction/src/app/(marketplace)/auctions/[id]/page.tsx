@@ -27,16 +27,31 @@ import StatusBadge from "@/components/status-badge";
 import Countdown from "@/components/countdown";
 import BidForm from "@/components/bid-form";
 import BidHistory from "@/components/bid-history";
+import {
+  IconClock,
+  IconShieldCheck,
+  IconTag,
+  IconUser,
+  IconArrowRight,
+} from "@/components/ui/icons";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const CATEGORY_ICONS: Record<string, string> = {
+  cycle: "🚲",
+  calculator: "🧮",
+  books: "📚",
+  electronics: "💻",
+  other: "📦",
+};
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const auction = await getAuction(id);
   if (!auction) return { title: "Auction Not Found" };
-  return { title: auction.title };
+  return { title: `${auction.title} | Campus Auction` };
 }
 
 export default async function AuctionDetailPage({ params }: PageProps) {
@@ -65,13 +80,29 @@ export default async function AuctionDetailPage({ params }: PageProps) {
   const hasActiveBid = auction.current_price_paise !== null;
 
   return (
-    <div className="page-container max-w-5xl">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Left column */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Photo */}
+    <div className="page-container max-w-6xl">
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center gap-2 text-xs text-white/50 mb-6">
+        <Link href="/" className="hover:text-white transition-colors">
+          Marketplace
+        </Link>
+        <span>/</span>
+        <Link
+          href={`/?category=${auction.category}`}
+          className="hover:text-white transition-colors"
+        >
+          {CATEGORY_LABELS[auction.category as keyof typeof CATEGORY_LABELS] ?? auction.category}
+        </Link>
+        <span>/</span>
+        <span className="text-white/80 truncate max-w-xs">{auction.title}</span>
+      </nav>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left column: media, description, bid history (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Media preview */}
           {photoUrl ? (
-            <div className="glass overflow-hidden rounded-2xl aspect-video flex items-center justify-center">
+            <div className="glass overflow-hidden rounded-3xl aspect-video flex items-center justify-center border border-white/[0.08] bg-black/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photoUrl}
@@ -80,214 +111,242 @@ export default async function AuctionDetailPage({ params }: PageProps) {
               />
             </div>
           ) : (
-            <div className="glass overflow-hidden rounded-2xl h-64 flex items-center justify-center">
-              <span className="text-8xl opacity-30">
-                {auction.category === "cycle"
-                  ? "🚲"
-                  : auction.category === "calculator"
-                  ? "🧮"
-                  : auction.category === "books"
-                  ? "📚"
-                  : auction.category === "electronics"
-                  ? "💻"
-                  : "📦"}
+            <div className="glass overflow-hidden rounded-3xl h-72 sm:h-80 flex flex-col items-center justify-center bg-gradient-to-br from-brand-950/40 via-surface-900 to-black/60 border border-white/[0.08] relative">
+              <span className="text-8xl drop-shadow-xl select-none">
+                {CATEGORY_ICONS[auction.category] ?? "📦"}
+              </span>
+              <span className="absolute bottom-4 text-xs text-white/40 font-mono tracking-wider uppercase">
+                {CATEGORY_LABELS[auction.category as keyof typeof CATEGORY_LABELS]}
               </span>
             </div>
           )}
 
-          {/* Title & badges */}
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-3">
+          {/* Title & Metadata */}
+          <div className="glass p-6 sm:p-7 rounded-3xl space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={auction.status} closingSoon={closingSoon} />
-              <span className="badge bg-white/10 text-white/60 ring-1 ring-white/20 text-xs">
+              <span className="badge bg-white/10 text-white/80 border-white/15 text-xs">
                 {CATEGORY_LABELS[auction.category as keyof typeof CATEGORY_LABELS] ?? auction.category}
               </span>
-              <span className="badge bg-white/10 text-white/60 ring-1 ring-white/20 text-xs">
+              <span className="badge bg-white/10 text-white/80 border-white/15 text-xs">
                 {CONDITION_LABELS[auction.condition as keyof typeof CONDITION_LABELS] ?? auction.condition}
               </span>
             </div>
-            <h1 className="text-3xl font-display font-bold text-white leading-tight">
+
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-white leading-tight">
               {auction.title}
             </h1>
-            <p className="text-white/50 text-sm mt-2">
-              Listed by{" "}
-              <span className="text-white/80 font-medium">{sellerName ?? "Unknown seller"}</span>
-              {" · "}
-              {formatRelativeTime(auction.created_at)}
-            </p>
+
+            {/* Seller profile card */}
+            <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-300 font-bold">
+                  {sellerName ? sellerName[0].toUpperCase() : "S"}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-white">
+                      {sellerName ?? "Campus Seller"}
+                    </span>
+                    <IconShieldCheck className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <p className="text-xs text-white/40">
+                    Listed {formatRelativeTime(auction.created_at)}
+                  </p>
+                </div>
+              </div>
+
+              {isSeller && (
+                <span className="px-2.5 py-1 rounded-lg bg-brand-500/20 text-brand-300 text-xs font-semibold border border-brand-500/30">
+                  Your Listing
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Description */}
-          <div className="glass p-6">
-            <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">
-              Description
+          <div className="glass p-6 sm:p-7 rounded-3xl space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-white/40">
+              Item Details & Condition
             </h2>
-            <p className="text-white/80 leading-relaxed whitespace-pre-wrap">
+            <div className="text-white/80 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
               {auction.description}
-            </p>
+            </div>
           </div>
 
-          {/* Cancellation info */}
+          {/* Cancellation Banner */}
           {auction.status === "cancelled_by_seller" && auction.cancellation_reason && (
-            <div className="alert-error">
-              <span>🚫</span>
+            <div className="alert-error rounded-2xl">
+              <span className="text-xl">🚫</span>
               <div>
-                <p className="font-medium">Cancelled by seller</p>
-                <p className="mt-0.5 opacity-80">{auction.cancellation_reason}</p>
+                <p className="font-semibold">Listing Cancelled by Seller</p>
+                <p className="text-xs mt-1 opacity-90">{auction.cancellation_reason}</p>
               </div>
             </div>
           )}
 
-          {/* Bid history */}
+          {/* Bid History */}
           <div>
-            <h2 className="section-title text-lg mb-4">
-              Bid History{" "}
-              <span className="text-white/40 text-sm font-normal ml-2">({bids.length})</span>
-            </h2>
             <BidHistory bids={bids} />
           </div>
         </div>
 
-        {/* Right column — pricing & actions */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Price card */}
-          <div className="glass p-6">
-            <p className="text-xs text-white/40 uppercase tracking-wider mb-1">
-              {hasActiveBid ? "Current Bid" : "Starting Price"}
-            </p>
-            <p className="text-4xl font-display font-bold text-brand-300 mb-4">
-              {formatPaise(displayPrice)}
-            </p>
+        {/* Right column: live pricing, bid form, actions (5 cols) */}
+        <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24">
+          {/* Main Pricing & Countdown Card */}
+          <div className="glass p-6 sm:p-7 rounded-3xl border border-white/[0.12] bg-gradient-to-b from-[#141522] to-surface-950 shadow-2xl space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
+                  {hasActiveBid ? "Leading Bid" : "Starting Price"}
+                </span>
+                {auction.status === "active" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Accepting Bids
+                  </span>
+                )}
+              </div>
+              <p className="text-4xl font-display font-extrabold text-white tracking-tight">
+                {formatPaise(displayPrice)}
+              </p>
+            </div>
 
+            {/* Live Countdown if active */}
             {auction.status === "active" && (
-              <>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-white/50">Closes</span>
-                  <span className="text-white/80">{formatDate(auction.closes_at)}</span>
+              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between">
+                <div className="flex items-center gap-2 text-white/60 text-xs font-medium">
+                  <IconClock className="w-4 h-4 text-amber-400" />
+                  <span>Auction closes in:</span>
                 </div>
-                <div className="flex items-center justify-between text-sm mb-5">
-                  <span className="text-white/50">Countdown</span>
-                  <Countdown
-                    closesAt={auction.closes_at}
-                    serverNow={serverNow}
-                    className="text-white font-semibold"
-                  />
-                </div>
-              </>
-            )}
-
-            {auction.status !== "active" && (
-              <div className="text-sm text-white/50 mb-4">
-                Status: <span className="text-white/80">{STATUS_LABELS[auction.status] ?? auction.status}</span>
+                <Countdown
+                  closesAt={auction.closes_at}
+                  serverNow={serverNow}
+                  className="text-base font-bold text-white font-mono"
+                />
               </div>
             )}
 
-            {/* Seller actions */}
+            {/* Non-active status indicator */}
+            {auction.status !== "active" && (
+              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between text-sm">
+                <span className="text-white/50">Auction Status:</span>
+                <span className="text-white font-semibold">
+                  {STATUS_LABELS[auction.status] ?? auction.status}
+                </span>
+              </div>
+            )}
+
+            {/* Bid Placement Form */}
+            {biddable && !isSeller && user && (
+              <div className="pt-2">
+                <BidForm
+                  auctionId={auction.id}
+                  currentPricePaise={auction.current_price_paise}
+                  startingPricePaise={auction.starting_price_paise}
+                  minimumIncrementPaise={auction.minimum_increment_paise}
+                  sellerId={auction.seller_id}
+                  currentUserId={user?.id}
+                />
+              </div>
+            )}
+
+            {/* Unauthenticated CTA */}
+            {biddable && !isSeller && !user && (
+              <div className="pt-2 text-center space-y-3">
+                <p className="text-white/60 text-xs">Sign in with your campus account to bid</p>
+                <Link
+                  href={`/sign-in?next=/auctions/${auction.id}`}
+                  className="btn btn-primary btn-lg w-full font-bold"
+                >
+                  Sign in to Bid
+                </Link>
+              </div>
+            )}
+
+            {/* Seller Controls */}
             {isSeller && (editable || cancellable) && (
-              <div className="border-t border-white/10 pt-4 space-y-3">
+              <div className="pt-4 border-t border-white/[0.08] space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
+                  Seller Options
+                </p>
                 {editable && (
                   <Link
                     href={`/auctions/${auction.id}/edit`}
                     className="btn btn-secondary btn-md w-full"
                   >
-                    ✏️ Edit Listing
+                    ✏️ Edit Listing Details
                   </Link>
                 )}
                 {cancellable && (
                   <Link
-                    href={`/my-listings`}
+                    href="/my-listings"
                     className="btn btn-danger btn-md w-full"
                   >
-                    Cancel Listing
+                    Cancel Listing (0 Bids)
                   </Link>
                 )}
               </div>
             )}
           </div>
 
-          {/* Bid form for non-sellers */}
-          {biddable && !isSeller && (
-            <div className="glass p-6">
-              <h2 className="text-base font-display font-semibold text-white mb-4">Place a Bid</h2>
-              <BidForm
-                auctionId={auction.id}
-                currentPricePaise={auction.current_price_paise}
-                startingPricePaise={auction.starting_price_paise}
-                minimumIncrementPaise={auction.minimum_increment_paise}
-                sellerId={auction.seller_id}
-                currentUserId={user?.id}
-              />
-            </div>
-          )}
-
-          {/* Must sign in to bid */}
-          {biddable && !isSeller && !user && (
-            <div className="glass p-6 text-center">
-              <p className="text-white/60 text-sm mb-4">Sign in to place a bid</p>
-              <Link
-                href={`/sign-in?next=/auctions/${auction.id}`}
-                className="btn btn-primary btn-md w-full"
-              >
-                Sign In to Bid
-              </Link>
-            </div>
-          )}
-
-          {/* Transaction status */}
+          {/* Transaction Outcome Card (if finalized/won) */}
           {transaction && (
-            <div className="glass p-6 space-y-3">
-              <h2 className="text-base font-display font-semibold text-white">Transaction</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-white/50">Status</span>
-                  <span className="text-white/80 font-medium capitalize">
-                    {transaction.status.replace(/_/g, " ")}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Final amount</span>
-                  <span className="text-brand-300 font-semibold">
+            <div className="glass p-6 rounded-3xl space-y-4 border border-white/[0.08]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/60">
+                  Transaction State
+                </h2>
+                <StatusBadge status={transaction.status as any} />
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                  <span className="text-white/50">Winning Amount</span>
+                  <span className="text-brand-300 font-bold text-sm">
                     {formatPaise(transaction.final_amount_paise)}
                   </span>
                 </div>
                 {transaction.seller_response_deadline_at && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Seller deadline</span>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-white/50">Seller Deadline</span>
                     <span className="text-white/80">
                       {formatDate(transaction.seller_response_deadline_at)}
                     </span>
                   </div>
                 )}
                 {transaction.pickup_deadline_at && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Pickup deadline</span>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-white/50">Pickup Deadline</span>
                     <span className="text-white/80">
                       {formatDate(transaction.pickup_deadline_at)}
                     </span>
-                  </div>
-                )}
-                {transaction.outcome_reason && (
-                  <div className="pt-2 border-t border-white/10">
-                    <p className="text-white/40 text-xs">Reason: {transaction.outcome_reason}</p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Timing details */}
-          <div className="glass p-5 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/50">Opens</span>
-              <span className="text-white/70">{formatDate(auction.opens_at)}</span>
+          {/* Auction Timeline Specifications */}
+          <div className="glass p-5 rounded-3xl space-y-2.5 text-xs border border-white/[0.06]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-1">
+              Specifications & Guarantees
+            </p>
+            <div className="flex justify-between text-white/60">
+              <span>Bidding opens</span>
+              <span className="text-white/90">{formatDate(auction.opens_at)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-white/50">Closes</span>
-              <span className="text-white/70">{formatDate(auction.closes_at)}</span>
+            <div className="flex justify-between text-white/60">
+              <span>Bidding closes</span>
+              <span className="text-white/90">{formatDate(auction.closes_at)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-white/50">Min increment</span>
-              <span className="text-white/70">{formatPaise(auction.minimum_increment_paise)}</span>
+            <div className="flex justify-between text-white/60">
+              <span>Minimum bid increment</span>
+              <span className="text-white/90">{formatPaise(auction.minimum_increment_paise)}</span>
+            </div>
+            <div className="flex justify-between text-white/60">
+              <span>Verification</span>
+              <span className="text-emerald-400 font-medium">PostgreSQL Row-Locked</span>
             </div>
           </div>
         </div>

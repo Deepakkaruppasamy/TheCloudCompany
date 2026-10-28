@@ -2,12 +2,14 @@
 /**
  * src/components/auction-form.tsx
  *
- * Shared create/edit auction form component.
+ * Modern auction create/edit form component with quick duration presets
+ * and robust rupee-to-paise conversion.
  */
-import { useActionState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { CATEGORIES, CONDITIONS } from "@/lib/validation/auction";
 import { CATEGORY_LABELS, CONDITION_LABELS } from "@/domain/auctions";
 import type { ActionResult } from "@/actions/auctions";
+import { IconClock } from "./ui/icons";
 
 interface AuctionFormProps {
   action: (prev: ActionResult<any> | null, form: FormData) => Promise<ActionResult<any>>;
@@ -39,6 +41,46 @@ export default function AuctionForm({
 
   const isEdit = mode === "edit";
 
+  // Controlled states for prices and dates to ensure rock-solid conversion
+  const [startPriceRupees, setStartPriceRupees] = useState(
+    defaultValues.startingPricePaise ? String(defaultValues.startingPricePaise / 100) : "100"
+  );
+  const [minIncrementRupees, setMinIncrementRupees] = useState(
+    defaultValues.minimumIncrementPaise ? String(defaultValues.minimumIncrementPaise / 100) : "10"
+  );
+
+  // Helper function to format date to HTML datetime-local (YYYY-MM-DDTHH:mm)
+  function formatForInput(date: Date) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  const [opensAt, setOpensAt] = useState(() => {
+    if (defaultValues.opensAt) return defaultValues.opensAt.slice(0, 16);
+    return formatForInput(new Date());
+  });
+
+  const [closesAt, setClosesAt] = useState(() => {
+    if (defaultValues.closesAt) return defaultValues.closesAt.slice(0, 16);
+    const future = new Date(Date.now() + 24 * 3600 * 1000);
+    return formatForInput(future);
+  });
+
+  // Quick duration helper
+  const setDurationHours = (hours: number) => {
+    const base = opensAt ? new Date(opensAt) : new Date();
+    const close = new Date(base.getTime() + hours * 3600 * 1000);
+    setClosesAt(formatForInput(close));
+  };
+
+  const calculatedStartPaise = Math.round((parseFloat(startPriceRupees) || 0) * 100);
+  const calculatedIncrementPaise = Math.round((parseFloat(minIncrementRupees) || 0) * 100);
+
   return (
     <form action={formAction} className="space-y-6" id={`auction-form-${mode}`}>
       {defaultValues.auctionId && (
@@ -48,136 +90,209 @@ export default function AuctionForm({
         <input type="hidden" name="photoPath" value={defaultValues.photoPath} />
       )}
 
-      {/* Title */}
-      <div>
-        <label htmlFor="auction-title" className="label">Title *</label>
-        <input
-          id="auction-title"
-          type="text"
-          name="title"
-          defaultValue={defaultValues.title}
-          placeholder="e.g. Trek 3500 Mountain Bike, barely used"
-          className="input"
-          minLength={3}
-          maxLength={120}
-          required
-          disabled={isPending}
-        />
-      </div>
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="auction-title" className="label">
+            Listing Title *
+          </label>
+          <input
+            id="auction-title"
+            type="text"
+            name="title"
+            defaultValue={defaultValues.title}
+            placeholder="e.g. Hero Sprint 26T Mountain Bicycle, like new"
+            className="input text-base font-medium"
+            minLength={3}
+            maxLength={120}
+            required
+            disabled={isPending}
+          />
+        </div>
 
-      {/* Description */}
-      <div>
-        <label htmlFor="auction-description" className="label">Description *</label>
-        <textarea
-          id="auction-description"
-          name="description"
-          defaultValue={defaultValues.description}
-          placeholder="Describe the item honestly — condition, any defects, accessories included…"
-          className="input min-h-32 resize-y"
-          minLength={10}
-          maxLength={2000}
-          required
-          disabled={isPending}
-        />
+        <div>
+          <label htmlFor="auction-description" className="label">
+            Description & Campus Pickup Details *
+          </label>
+          <textarea
+            id="auction-description"
+            name="description"
+            defaultValue={defaultValues.description}
+            placeholder="Include condition, semester used, accessories included, and where on campus you prefer meeting for handover (e.g. Library foyer, Hostel 4 lobby)..."
+            className="input min-h-32 resize-y text-sm leading-relaxed"
+            minLength={10}
+            maxLength={2000}
+            required
+            disabled={isPending}
+          />
+        </div>
       </div>
 
       {/* Category & Condition */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="auction-category" className="label">Category *</label>
+          <label htmlFor="auction-category" className="label">
+            Category *
+          </label>
           <select
             id="auction-category"
             name="category"
             defaultValue={defaultValues.category ?? ""}
-            className="input"
+            className="input cursor-pointer"
             required
             disabled={isPending}
           >
-            <option value="" disabled>Select category</option>
+            <option value="" disabled>Select a category</option>
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+              <option key={c} value={c} className="bg-surface-900 text-white">
+                {CATEGORY_LABELS[c]}
+              </option>
             ))}
           </select>
         </div>
+
         <div>
-          <label htmlFor="auction-condition" className="label">Condition *</label>
+          <label htmlFor="auction-condition" className="label">
+            Condition *
+          </label>
           <select
             id="auction-condition"
             name="condition"
             defaultValue={defaultValues.condition ?? ""}
-            className="input"
+            className="input cursor-pointer"
             required
             disabled={isPending}
           >
-            <option value="" disabled>Select condition</option>
+            <option value="" disabled>Select item condition</option>
             {CONDITIONS.map((c) => (
-              <option key={c} value={c}>{CONDITION_LABELS[c]}</option>
+              <option key={c} value={c} className="bg-surface-900 text-white">
+                {CONDITION_LABELS[c]}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Prices — only for create */}
+      {/* Pricing Fields (Only in Create Mode) */}
       {!isEdit && (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="auction-start-price" className="label">Starting Price (₹) *</label>
-            <input
-              id="auction-start-price"
-              type="number"
-              name="startingPriceRupees"
-              min={1}
-              step={1}
-              placeholder="e.g. 500"
-              className="input"
-              required
-              disabled={isPending}
-            />
-            {/* Converted to paise via hidden field by JS */}
-            <input type="hidden" name="startingPricePaise" id="starting-price-paise" />
-          </div>
-          <div>
-            <label htmlFor="auction-increment" className="label">Min Increment (₹) *</label>
-            <input
-              id="auction-increment"
-              type="number"
-              name="minimumIncrementRupees"
-              min={1}
-              step={1}
-              placeholder="e.g. 50"
-              className="input"
-              required
-              disabled={isPending}
-            />
-            <input type="hidden" name="minimumIncrementPaise" id="minimum-increment-paise" />
+        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/50">
+            Pricing (₹)
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="auction-start-price" className="label">
+                Starting Bid (₹) *
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40 font-semibold">
+                  ₹
+                </span>
+                <input
+                  id="auction-start-price"
+                  type="number"
+                  name="startingPriceRupees"
+                  min={1}
+                  step={1}
+                  value={startPriceRupees}
+                  onChange={(e) => setStartPriceRupees(e.target.value)}
+                  placeholder="e.g. 500"
+                  className="input pl-8 font-semibold"
+                  required
+                  disabled={isPending}
+                />
+              </div>
+              <input type="hidden" name="startingPricePaise" value={calculatedStartPaise} />
+            </div>
+
+            <div>
+              <label htmlFor="auction-increment" className="label">
+                Minimum Increment (₹) *
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40 font-semibold">
+                  ₹
+                </span>
+                <input
+                  id="auction-increment"
+                  type="number"
+                  name="minimumIncrementRupees"
+                  min={1}
+                  step={1}
+                  value={minIncrementRupees}
+                  onChange={(e) => setMinIncrementRupees(e.target.value)}
+                  placeholder="e.g. 20"
+                  className="input pl-8 font-semibold"
+                  required
+                  disabled={isPending}
+                />
+              </div>
+              <input type="hidden" name="minimumIncrementPaise" value={calculatedIncrementPaise} />
+            </div>
           </div>
         </div>
       )}
 
-      {/* Dates — only for create */}
+      {/* Schedule Fields (Only in Create Mode) */}
       {!isEdit && (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="auction-opens-at" className="label">Opens At *</label>
-            <input
-              id="auction-opens-at"
-              type="datetime-local"
-              name="opensAt"
-              className="input"
-              required
-              disabled={isPending}
-            />
+        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white/50">
+              Auction Schedule
+            </h3>
+            {/* Quick preset buttons */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] text-white/40 mr-1">Duration:</span>
+              {[
+                { label: "12h", hours: 12 },
+                { label: "24h", hours: 24 },
+                { label: "3 days", hours: 72 },
+                { label: "7 days", hours: 168 },
+              ].map((p) => (
+                <button
+                  key={p.hours}
+                  type="button"
+                  onClick={() => setDurationHours(p.hours)}
+                  className="px-2 py-0.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-[11px] font-medium text-white/80 hover:text-white"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div>
-            <label htmlFor="auction-closes-at" className="label">Closes At *</label>
-            <input
-              id="auction-closes-at"
-              type="datetime-local"
-              name="closesAt"
-              className="input"
-              required
-              disabled={isPending}
-            />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="auction-opens-at" className="label">
+                Opens At *
+              </label>
+              <input
+                id="auction-opens-at"
+                type="datetime-local"
+                name="opensAt"
+                value={opensAt}
+                onChange={(e) => setOpensAt(e.target.value)}
+                className="input cursor-pointer"
+                required
+                disabled={isPending}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="auction-closes-at" className="label">
+                Closes At *
+              </label>
+              <input
+                id="auction-closes-at"
+                type="datetime-local"
+                name="closesAt"
+                value={closesAt}
+                onChange={(e) => setClosesAt(e.target.value)}
+                className="input cursor-pointer"
+                required
+                disabled={isPending}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -191,36 +306,14 @@ export default function AuctionForm({
 
       <button
         type="submit"
-        className="btn btn-primary btn-lg w-full"
+        className="btn btn-primary btn-lg w-full font-bold shadow-xl shadow-brand-900/40"
         disabled={isPending}
         id={`auction-submit-${mode}`}
       >
         {isPending
-          ? isEdit ? "Saving changes…" : "Creating listing…"
-          : isEdit ? "Save Changes" : "Create Listing"}
+          ? isEdit ? "Updating auction…" : "Publishing auction…"
+          : isEdit ? "Save Changes" : "Publish Auction Listing"}
       </button>
-
-      {/* Client-side paise conversion */}
-      {!isEdit && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function sync(id, paiseId) {
-                  var el = document.getElementById(id);
-                  var hidden = document.getElementById(paiseId);
-                  if (!el || !hidden) return;
-                  el.addEventListener('input', function() {
-                    hidden.value = Math.round(parseFloat(el.value || 0) * 100);
-                  });
-                }
-                sync('auction-start-price', 'starting-price-paise');
-                sync('auction-increment', 'minimum-increment-paise');
-              })();
-            `,
-          }}
-        />
-      )}
     </form>
   );
 }
