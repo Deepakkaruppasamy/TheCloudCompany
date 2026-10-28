@@ -251,7 +251,8 @@ CREATE TABLE notifications (
     'auction_won', 'auction_unsold', 'seller_approval_needed',
     'seller_approved', 'seller_rejected', 'seller_unresponsive',
     'pickup_deadline', 'failed_pickup', 'handover_completed',
-    'auction_cancelled', 'outbid', 'closing_soon'
+    'auction_cancelled', 'outbid', 'closing_soon',
+    'listing_created', 'listing_updated', 'bid_placed', 'bid_received'
   )),
   auction_id UUID NULL REFERENCES auctions(id) ON DELETE CASCADE,
   transaction_id UUID NULL REFERENCES transactions(id) ON DELETE CASCADE,

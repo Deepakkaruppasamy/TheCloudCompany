@@ -20,6 +20,10 @@ const TYPE_ICONS: Record<string, string> = {
   auction_cancelled: "🛑",
   outbid: "⚡",
   closing_soon: "🔔",
+  listing_created: "🎉",
+  listing_updated: "✏️",
+  bid_placed: "💰",
+  bid_received: "🏷️",
 };
 
 export default function NotificationItem({

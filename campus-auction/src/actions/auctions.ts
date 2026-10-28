@@ -15,6 +15,7 @@ import {
   editAuctionRpc,
   cancelAuctionRpc,
 } from "@/data/auctions";
+import { createNotification } from "@/data/notifications";
 import { getAdminClient } from "@/lib/server/admin";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -110,7 +111,7 @@ export async function createAuction(
   prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult<{ id: string }>> {
-  await requireUser();
+  const user = await requireUser();
 
   const startingPricePaise =
     Number(formData.get("startingPricePaise")) ||
@@ -141,6 +142,14 @@ export async function createAuction(
       ...parsed.data,
       photoPath: parsed.data.photoPath ?? null,
     });
+
+    await createNotification({
+      recipientId: user.id,
+      type: "listing_created",
+      message: `Your listing "${parsed.data.title}" has been created and is now live.`,
+      auctionId: id,
+    });
+
     revalidatePath("/");
     return { ok: true, data: { id } };
   } catch (err: unknown) {
@@ -158,7 +167,7 @@ export async function editAuction(
   prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult> {
-  await requireUser();
+  const user = await requireUser();
 
   const raw = {
     auctionId: formData.get("auctionId"),
@@ -179,6 +188,14 @@ export async function editAuction(
       ...parsed.data,
       photoPath: parsed.data.photoPath ?? null,
     });
+
+    await createNotification({
+      recipientId: user.id,
+      type: "listing_updated",
+      message: `Your listing "${parsed.data.title}" was updated successfully.`,
+      auctionId: parsed.data.auctionId,
+    });
+
     revalidatePath(`/auctions/${parsed.data.auctionId}`);
     return { ok: true, data: undefined };
   } catch (err: unknown) {
@@ -196,7 +213,7 @@ export async function cancelAuction(
   auctionId: string,
   reason: string
 ): Promise<ActionResult> {
-  await requireUser();
+  const user = await requireUser();
 
   if (!reason || reason.trim().length === 0) {
     return { ok: false, error: "A reason is required to cancel." };
@@ -207,6 +224,14 @@ export async function cancelAuction(
 
   try {
     await cancelAuctionRpc(auctionId, reason);
+
+    await createNotification({
+      recipientId: user.id,
+      type: "auction_cancelled",
+      message: `You cancelled your listing. Reason: ${reason}.`,
+      auctionId,
+    });
+
     revalidatePath("/my-listings");
     redirect("/my-listings");
   } catch (err: unknown) {
