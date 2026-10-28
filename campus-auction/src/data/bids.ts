@@ -68,9 +68,19 @@ export async function setAutoBidRpc(params: {
 }): Promise<any> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("set_auto_bid", {
-    auction_id: params.auctionId,
-    max_amount_paise: params.maxAmountPaise,
+    p_auction_id: params.auctionId,
+    p_max_amount_paise: params.maxAmountPaise,
   } as any);
-  if (error) throw error;
+
+  if (error) {
+    // Resilient fallback if PostgREST cache has un-prefixed parameters
+    const fallback = await supabase.rpc("set_auto_bid", {
+      auction_id: params.auctionId,
+      max_amount_paise: params.maxAmountPaise,
+    } as any);
+    if (fallback.error) throw fallback.error;
+    return fallback.data;
+  }
+
   return data;
 }
