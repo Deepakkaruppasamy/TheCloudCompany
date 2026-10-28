@@ -33,8 +33,8 @@ export default function SignUpPage() {
     }
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signUp({
-      email,
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
       password,
       options: {
         data: { display_name: displayName.trim() },
@@ -47,6 +47,13 @@ export default function SignUpPage() {
       return;
     }
 
+    if (authData.session) {
+      // Auto-signed in! Redirect directly into the app
+      window.location.href = "/";
+      return;
+    }
+
+    // Email confirmation required by Supabase project settings
     setSuccess(true);
     setIsPending(false);
   }

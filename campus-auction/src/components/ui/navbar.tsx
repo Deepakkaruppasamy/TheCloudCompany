@@ -21,8 +21,7 @@ export default function NavBar({ user }: NavBarProps) {
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/sign-in");
-    router.refresh();
+    window.location.href = "/sign-in";
   };
 
   const navLinks = user
@@ -71,6 +70,9 @@ export default function NavBar({ user }: NavBarProps) {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                <span className="hidden lg:inline-block text-xs text-white/50 bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/10">
+                  👤 {user.user_metadata?.display_name || user.email?.split("@")[0]}
+                </span>
                 <Link
                   href="/auctions/new"
                   className="btn btn-primary btn-sm hidden sm:flex"

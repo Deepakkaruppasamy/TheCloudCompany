@@ -13,10 +13,15 @@ export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
+  const callbackError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    callbackError === "auth_callback"
+      ? "Authentication callback failed. Please sign in again."
+      : null
+  );
   const [isPending, setIsPending] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -25,8 +30,8 @@ export default function SignInPage() {
     setIsPending(true);
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
       password,
     });
 
@@ -36,8 +41,12 @@ export default function SignInPage() {
       return;
     }
 
-    router.push(next);
-    router.refresh();
+    if (data.session) {
+      // Full reload so all server components and middleware sync with the session cookie immediately
+      window.location.href = next;
+    } else {
+      setIsPending(false);
+    }
   }
 
   return (

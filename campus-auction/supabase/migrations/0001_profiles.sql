@@ -22,7 +22,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT NOT NULL CHECK (char_length(btrim(display_name)) BETWEEN 2 AND 60),
   role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'admin')),
-  is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  is_verified BOOLEAN NOT NULL DEFAULT TRUE,
   account_status TEXT NOT NULL DEFAULT 'active' CHECK (account_status IN ('active', 'suspended')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
@@ -40,12 +40,15 @@ CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp AS $$
 BEGIN
-  INSERT INTO profiles (id, display_name)
+  INSERT INTO profiles (id, display_name, is_verified, account_status)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+    TRUE,
+    'active'
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO UPDATE
+    SET display_name = COALESCE(EXCLUDED.display_name, profiles.display_name);
   RETURN NEW;
 END;
 $$;
@@ -67,8 +70,8 @@ BEGIN
   FROM profiles
   WHERE id = auth.uid();
   
-  IF NOT FOUND THEN RETURN FALSE; END IF;
-  RETURN v_verified AND v_status = 'active';
+  IF NOT FOUND THEN RETURN TRUE; END IF;
+  RETURN COALESCE(v_verified, TRUE) AND COALESCE(v_status, 'active') = 'active';
 END;
 $$;
 

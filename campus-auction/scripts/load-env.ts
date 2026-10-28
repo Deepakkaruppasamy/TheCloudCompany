@@ -20,3 +20,4 @@ function loadEnvFile(filePath: string) {
 // Load .env.local first, then .env
 loadEnvFile(path.resolve(process.cwd(), ".env.local"));
 loadEnvFile(path.resolve(process.cwd(), ".env"));
+
