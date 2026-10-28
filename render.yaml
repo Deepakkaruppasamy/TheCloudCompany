@@ -1,0 +1,31 @@
+# Render Blueprint Specification for Campus Auction
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: campus-auction
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "false"
+      - key: SELLER_RESPONSE_HOURS
+        value: "24"
+      - key: PICKUP_HOURS
+        value: "48"
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RECONCILE_SECRET
+        generateValue: true

@@ -162,6 +162,58 @@ npm run reconcile:manual
 
 ---
 
+
+---
+
+## 🐳 Docker & Render Deployment
+
+This repository includes a multi-stage production `Dockerfile` (using Next.js standalone mode on Alpine Linux) and an Infrastructure-as-Code Blueprint (`render.yaml`).
+
+### Option 1: One-Click Render Blueprint Deployment
+1. Connect your GitHub repository to [Render.com](https://render.com).
+2. Go to **Blueprints** -> **New Blueprint Instance**.
+3. Select this repository. Render automatically reads `render.yaml` and provisions:
+   - Web Service with Docker runtime.
+   - Default port `10000`.
+   - Auto-generated `RECONCILE_SECRET`.
+4. Fill in your Supabase variables when prompted:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+
+### Option 2: Manual Render Web Service Creation
+1. In Render Dashboard, click **New +** -> **Web Service**.
+2. Select **Build and deploy from a Git repository**.
+3. Set the following settings:
+   - **Language / Runtime:** `Docker`
+   - **Region:** Any (e.g. Oregon / Singapore / Frankfurt)
+   - **Branch:** `main`
+   - **Root Directory:** Leave blank (or set to `campus-auction`)
+   - **Dockerfile Path:** `./Dockerfile` (or `./campus-auction/Dockerfile` if root is `campus-auction`)
+4. Add the following **Environment Variables**:
+   - `PORT`: `10000`
+   - `NODE_ENV`: `production`
+   - `DEMO_MODE`: `false`
+   - `SELLER_RESPONSE_HOURS`: `24`
+   - `PICKUP_HOURS`: `48`
+   - `NEXT_PUBLIC_SUPABASE_URL`: `<your-supabase-project-url>`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `<your-supabase-anon-key>`
+   - `SUPABASE_SERVICE_ROLE_KEY`: `<your-supabase-service-role-key>`
+   - `RECONCILE_SECRET`: `<your-32-char-random-secret>`
+5. Click **Create Web Service**. Render builds and runs the container.
+
+### Option 3: Local Docker Build & Run
+```bash
+# Build the production image
+docker build -t campus-auction .
+
+# Run container mapping port 10000
+docker run -p 10000:10000 \
+  --env-file campus-auction/.env.local \
+  campus-auction
+```
+Access the application at `http://localhost:10000`.
+
 ## 🔒 Security & Privacy Guarantees
 
 - **PostgreSQL Row-Level Security (RLS):** Every table is locked down. Students can only update their own listings, read their own notifications, and view their own private maximum proxy bids.
