@@ -50,3 +50,27 @@ export async function placeBidRpc(params: {
     new_closes_at?: string;
   };
 }
+
+export async function getMyAutoBid(auctionId: string): Promise<number | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("auto_bids")
+    .select("max_amount_paise")
+    .eq("auction_id", auctionId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data as any).max_amount_paise;
+}
+
+export async function setAutoBidRpc(params: {
+  auctionId: string;
+  maxAmountPaise: number;
+}): Promise<any> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("set_auto_bid", {
+    auction_id: params.auctionId,
+    max_amount_paise: params.maxAmountPaise,
+  } as any);
+  if (error) throw error;
+  return data;
+}
