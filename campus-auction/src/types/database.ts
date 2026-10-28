@@ -83,6 +83,8 @@ export interface Database {
           first_bid_at: string | null;
           cancelled_at: string | null;
           cancellation_reason: string | null;
+          extension_count: number;
+          last_extended_at: string | null;
           created_at: string;
           updated_at: string;
         };
