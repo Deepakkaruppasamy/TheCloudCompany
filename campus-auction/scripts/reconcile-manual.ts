@@ -5,6 +5,7 @@
  * Requires SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL.
  * Never exposes secrets in logs.
  */
+import "./load-env";
 import { createClient } from "@supabase/supabase-js";
 
 function requireEnv(name: string): string {

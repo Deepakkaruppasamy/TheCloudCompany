@@ -5,6 +5,7 @@
  * Run once per deploy and when demo settings change.
  * Never prints secret values.
  */
+import "./load-env";
 import { createClient } from "@supabase/supabase-js";
 
 function requireEnv(name: string): string {

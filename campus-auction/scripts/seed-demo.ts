@@ -6,6 +6,7 @@
  * Requires all DEMO_* env vars.
  * Never logs passwords or secrets.
  */
+import "./load-env";
 import { createClient } from "@supabase/supabase-js";
 
 function requireEnv(name: string): string {
