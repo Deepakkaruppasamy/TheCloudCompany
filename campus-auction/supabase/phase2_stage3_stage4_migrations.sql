@@ -381,13 +381,19 @@ NOTIFY pgrst, 'reload schema';
 
 
 
+
+
 -- ==============================================================================
--- 0018_fix_set_auto_bid.sql (Fixes column reference ambiguity in set_auto_bid)
+-- 0018_fix_set_auto_bid.sql
 -- ==============================================================================
 -- Migration 0018: Fix ambiguous column reference in set_auto_bid
 -- Resolves Postgres error 42702 ("column reference auction_id is ambiguous")
+-- Note: Drops the old function first to allow parameter renaming (avoids Postgres 42P13)
 
--- 1. Update resolve_auto_bids to guard against NULL initial lead amounts
+-- Step 1: Drop existing function first
+DROP FUNCTION IF EXISTS set_auto_bid(UUID, BIGINT);
+
+-- Step 2: Update resolve_auto_bids to guard against NULL initial lead amounts
 CREATE OR REPLACE FUNCTION resolve_auto_bids(
   p_auction_id UUID,
   p_now TIMESTAMPTZ
@@ -525,7 +531,7 @@ BEGIN
 END;
 $$;
 
--- 2. Core function using p_ prefix to avoid column name conflicts
+-- Step 3: Create set_auto_bid with p_ prefixed parameters
 CREATE OR REPLACE FUNCTION set_auto_bid(
   p_auction_id UUID,
   p_max_amount_paise BIGINT
@@ -582,19 +588,8 @@ BEGIN
 END;
 $$;
 
--- 3. Overload supporting un-prefixed auction_id parameter for backward compatibility
-CREATE OR REPLACE FUNCTION set_auto_bid(
-  auction_id UUID,
-  max_amount_paise BIGINT
-) RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public, pg_temp AS $$
-BEGIN
-  RETURN set_auto_bid(p_auction_id => auction_id, p_max_amount_paise => max_amount_paise);
-END;
-$$;
-
+-- Step 4: Grant permissions & reload PostgREST schema cache
 REVOKE ALL ON FUNCTION set_auto_bid(UUID, BIGINT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION set_auto_bid(UUID, BIGINT) TO authenticated;
 
--- Refresh PostgREST schema cache
 NOTIFY pgrst, 'reload schema';
