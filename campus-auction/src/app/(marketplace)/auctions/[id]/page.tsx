@@ -235,16 +235,26 @@ export default async function AuctionDetailPage({ params }: PageProps) {
 
             {/* Live Countdown if active */}
             {auction.status === "active" && (
-              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-white/60 text-xs font-medium">
-                  <IconClock className="w-4 h-4 text-amber-400" />
-                  <span>Auction closes in:</span>
+              <div className="space-y-2">
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-white/60 text-xs font-medium">
+                    <IconClock className="w-4 h-4 text-amber-400" />
+                    <span>Auction closes in:</span>
+                  </div>
+                  <Countdown
+                    closesAt={auction.closes_at}
+                    serverNow={serverNow}
+                    className="text-base font-bold text-white font-mono"
+                  />
                 </div>
-                <Countdown
-                  closesAt={auction.closes_at}
-                  serverNow={serverNow}
-                  className="text-base font-bold text-white font-mono"
-                />
+                {auction.extension_count > 0 && (
+                  <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-medium animate-pulse">
+                    <span>⏱️</span>
+                    <span>
+                      Extended {auction.extension_count} time{auction.extension_count > 1 ? "s" : ""} (+60s anti-sniping rule)
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

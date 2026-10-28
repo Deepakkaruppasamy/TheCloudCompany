@@ -31,6 +31,8 @@ export async function placeBidRpc(params: {
   amount_paise: number;
   placed_at: string;
   replayed: boolean;
+  extended?: boolean;
+  new_closes_at?: string;
 }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("place_bid", {
@@ -44,5 +46,7 @@ export async function placeBidRpc(params: {
     amount_paise: number;
     placed_at: string;
     replayed: boolean;
+    extended?: boolean;
+    new_closes_at?: string;
   };
 }
