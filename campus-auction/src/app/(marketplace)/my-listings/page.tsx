@@ -146,6 +146,12 @@ export default async function MyListingsPage() {
                     >
                       View Auction →
                     </Link>
+                    <Link
+                      href={`/auctions/${listing.id}#questions`}
+                      className="btn btn-ghost btn-sm text-xs text-brand-300"
+                    >
+                      💬 Q&A
+                    </Link>
                     {editable && (
                       <Link
                         href={`/auctions/${listing.id}/edit`}

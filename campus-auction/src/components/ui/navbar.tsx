@@ -50,6 +50,7 @@ export default function NavBar({ user }: NavBarProps) {
               { href: "/dashboard/seller", label: "Seller Hub" },
             ]
           : [{ href: "/dashboard/winner", label: "Won Items" }]),
+        { href: "/saved-searches", label: "Alerts" },
         { href: "/notifications", label: "Notifications" },
       ]
     : [{ href: "/", label: "Browse" }];
