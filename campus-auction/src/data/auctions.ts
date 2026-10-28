@@ -53,7 +53,10 @@ export async function listAuctions(
   query = query.range(from, from + pageSize - 1);
 
   const { data, error, count } = await query;
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("listAuctions query error:", error.message);
+    return { auctions: [], total: 0 };
+  }
   return { auctions: data ?? [], total: count ?? 0 };
 }
 
@@ -75,7 +78,10 @@ export async function getMyListings(sellerId: string): Promise<Auction[]> {
     .select("*")
     .eq("seller_id", sellerId)
     .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("getMyListings error:", error.message);
+    return [];
+  }
   return data ?? [];
 }
 

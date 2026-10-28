@@ -63,10 +63,10 @@ export default async function AuctionDetailPage({ params }: PageProps) {
   if (!auction) notFound();
 
   const [bids, sellerName, transaction, photoUrl] = await Promise.all([
-    getBidHistory(id),
-    getSellerDisplayName(auction.seller_id),
-    getTransactionByAuction(id),
-    auction.photo_path ? getPhotoSignedUrl(auction.photo_path) : Promise.resolve(null),
+    getBidHistory(id).catch(() => []),
+    getSellerDisplayName(auction.seller_id).catch(() => null),
+    getTransactionByAuction(id).catch(() => null),
+    auction.photo_path ? getPhotoSignedUrl(auction.photo_path).catch(() => null) : Promise.resolve(null),
   ]);
 
   const now = new Date();

@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listAuctions, getPublicStats } from "@/data/auctions";
+import { getPhotoSignedUrls } from "@/actions/auctions";
 import AuctionCard from "@/components/auction-card";
 import Filters from "@/components/filters";
 import { CATEGORIES } from "@/lib/validation/auction";
@@ -61,9 +62,15 @@ export default async function BrowsePage({ searchParams }: PageProps) {
   const serverNow = new Date().toISOString();
 
   const [{ auctions, total }, stats] = await Promise.all([
-    listAuctions({ category, condition, search, closingSoon }, page, pageSize),
+    listAuctions({ category, condition, search, closingSoon }, page, pageSize).catch(() => ({
+      auctions: [],
+      total: 0,
+    })),
     getPublicStats().catch(() => ({ active_auctions: 0 })),
   ]);
+
+  const photoPaths = auctions.map((a) => a.photo_path).filter(Boolean) as string[];
+  const photoUrls: Record<string, string> = await getPhotoSignedUrls(photoPaths).catch(() => ({}));
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -212,7 +219,12 @@ export default async function BrowsePage({ searchParams }: PageProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {auctions.map((auction) => (
-              <AuctionCard key={auction.id} auction={auction} serverNow={serverNow} />
+              <AuctionCard
+                key={auction.id}
+                auction={auction}
+                serverNow={serverNow}
+                photoUrl={auction.photo_path ? photoUrls[auction.photo_path] : null}
+              />
             ))}
           </div>
         )}

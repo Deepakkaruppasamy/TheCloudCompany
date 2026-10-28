@@ -9,6 +9,7 @@ import { useActionState, useState, useEffect } from "react";
 import { CATEGORIES, CONDITIONS } from "@/lib/validation/auction";
 import { CATEGORY_LABELS, CONDITION_LABELS } from "@/domain/auctions";
 import type { ActionResult } from "@/actions/auctions";
+import ImageUpload from "@/components/image-upload";
 import { IconClock } from "./ui/icons";
 
 interface AuctionFormProps {
@@ -78,6 +79,8 @@ export default function AuctionForm({
     setClosesAt(formatForInput(close));
   };
 
+  const [photoPath, setPhotoPath] = useState<string | null>(defaultValues.photoPath ?? null);
+
   const calculatedStartPaise = Math.round((parseFloat(startPriceRupees) || 0) * 100);
   const calculatedIncrementPaise = Math.round((parseFloat(minIncrementRupees) || 0) * 100);
 
@@ -85,9 +88,6 @@ export default function AuctionForm({
     <form action={formAction} className="space-y-6" id={`auction-form-${mode}`}>
       {defaultValues.auctionId && (
         <input type="hidden" name="auctionId" value={defaultValues.auctionId} />
-      )}
-      {defaultValues.photoPath && (
-        <input type="hidden" name="photoPath" value={defaultValues.photoPath} />
       )}
 
       {/* Basic Info */}
@@ -172,6 +172,13 @@ export default function AuctionForm({
           </select>
         </div>
       </div>
+
+      {/* Image / Photo Upload */}
+      <ImageUpload
+        defaultPath={defaultValues.photoPath}
+        onPhotoUploaded={setPhotoPath}
+        disabled={isPending}
+      />
 
       {/* Pricing Fields (Only in Create Mode) */}
       {!isEdit && (

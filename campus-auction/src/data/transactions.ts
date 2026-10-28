@@ -29,7 +29,10 @@ export async function getMyWonTransactions(
     .select("*")
     .eq("winner_id", winnerId)
     .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("getMyWonTransactions error:", error.message);
+    return [];
+  }
   return data ?? [];
 }
 
@@ -43,7 +46,10 @@ export async function getSellerTransactions(
     .select("*, auctions!inner(seller_id)")
     .eq("auctions.seller_id", sellerId)
     .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("getSellerTransactions error:", error.message);
+    return [];
+  }
   return (data ?? []) as Transaction[];
 }
 

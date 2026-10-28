@@ -21,8 +21,8 @@ export const metadata = {
 export default async function SellerDashboardPage() {
   const user = await requireUser();
   const [transactions, listings] = await Promise.all([
-    getSellerTransactions(user.id),
-    getMyListings(user.id),
+    getSellerTransactions(user.id).catch(() => []),
+    getMyListings(user.id).catch(() => []),
   ]);
 
   const pendingApproval = transactions.filter(

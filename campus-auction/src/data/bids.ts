@@ -15,7 +15,10 @@ export async function getBidHistory(auctionId: string): Promise<BidHistoryRow[]>
     .select("*")
     .eq("auction_id", auctionId)
     .order("amount_paise", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("getBidHistory error:", error.message);
+    return [];
+  }
   return data ?? [];
 }
 

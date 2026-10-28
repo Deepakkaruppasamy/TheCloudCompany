@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { getUser } from "@/lib/auth/session";
 import NavBar from "@/components/ui/navbar";
+import BrowserNotifications from "@/components/browser-notifications";
 import { IconShieldCheck } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
@@ -20,6 +21,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getUser();
+  const navUser = user
+    ? {
+        id: user.id,
+        email: user.email,
+        displayName:
+          (user.user_metadata?.display_name as string) ||
+          user.email?.split("@")[0] ||
+          "User",
+        role: (user.user_metadata?.role as string) || "buyer",
+      }
+    : null;
 
   return (
     <html lang="en" className="dark">
@@ -32,7 +44,8 @@ export default async function RootLayout({
         />
       </head>
       <body className="flex flex-col min-h-screen">
-        <NavBar user={user} />
+        <BrowserNotifications userId={navUser?.id} variant="listener" />
+        <NavBar user={navUser} />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-white/[0.08] mt-20 py-10 bg-[#090a0f]/60 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40">

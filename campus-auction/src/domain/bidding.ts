@@ -16,8 +16,16 @@ export const BID_ERROR_MESSAGES: Record<string, string> = {
   unknown: "Something went wrong placing your bid. Please try again.",
 };
 
-/** Converts a Supabase function error code to a user message */
-export function getBidErrorMessage(code: string | undefined): string {
-  if (!code) return BID_ERROR_MESSAGES.unknown;
-  return BID_ERROR_MESSAGES[code] ?? BID_ERROR_MESSAGES.unknown;
+/** Converts a Supabase function error code or message to a user-facing message */
+export function getBidErrorMessage(codeOrMessage: string | undefined): string {
+  if (!codeOrMessage) return BID_ERROR_MESSAGES.unknown;
+  const normalized = codeOrMessage.toLowerCase();
+
+  for (const [key, msg] of Object.entries(BID_ERROR_MESSAGES)) {
+    if (key !== "unknown" && normalized.includes(key)) {
+      return msg;
+    }
+  }
+
+  return BID_ERROR_MESSAGES[codeOrMessage] ?? BID_ERROR_MESSAGES.unknown;
 }

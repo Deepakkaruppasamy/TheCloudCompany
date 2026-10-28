@@ -16,7 +16,10 @@ export async function getNotifications(recipientId: string): Promise<Notificatio
     .eq("recipient_id", recipientId)
     .order("created_at", { ascending: false })
     .limit(50);
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("getNotifications error:", error.message);
+    return [];
+  }
   return data ?? [];
 }
 

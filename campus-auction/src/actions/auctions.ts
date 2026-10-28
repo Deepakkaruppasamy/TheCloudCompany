@@ -43,11 +43,26 @@ export async function uploadListingPhoto(
   const path = `${user.id}/${Date.now()}.${ext}`;
   const admin = getAdminClient();
 
-  const { error } = await admin.storage
+  let uploadRes = await admin.storage
     .from("listing-photos")
     .upload(path, file, { contentType: file.type, upsert: false });
 
-  if (error) return { ok: false, error: "Photo upload failed. Please try again." };
+  // Self-heal if bucket was missing
+  if (uploadRes.error && uploadRes.error.message?.toLowerCase().includes("not found")) {
+    await admin.storage.createBucket("listing-photos", {
+      public: false,
+      fileSizeLimit: MAX_FILE_SIZE_BYTES,
+      allowedMimeTypes: ALLOWED_MIME_TYPES,
+    });
+    uploadRes = await admin.storage
+      .from("listing-photos")
+      .upload(path, file, { contentType: file.type, upsert: false });
+  }
+
+  if (uploadRes.error) {
+    console.error("[uploadListingPhoto] Storage upload failed:", uploadRes.error);
+    return { ok: false, error: uploadRes.error.message || "Photo upload failed. Please try again." };
+  }
   return { ok: true, data: path };
 }
 
@@ -60,6 +75,34 @@ export async function getPhotoSignedUrl(
     .from("listing-photos")
     .createSignedUrl(path, 3600); // 1 hour
   return data?.signedUrl ?? null;
+}
+
+/** Create signed URLs for multiple photo paths in batch */
+export async function getPhotoSignedUrls(
+  paths: string[]
+): Promise<Record<string, string>> {
+  const validPaths = paths.filter((p) => typeof p === "string" && p.trim().length > 0);
+  if (validPaths.length === 0) return {};
+
+  const admin = getAdminClient();
+  try {
+    const { data, error } = await admin.storage
+      .from("listing-photos")
+      .createSignedUrls(validPaths, 3600);
+
+    if (error || !data) return {};
+
+    const urlMap: Record<string, string> = {};
+    for (const item of data) {
+      if (item.path && item.signedUrl) {
+        urlMap[item.path] = item.signedUrl;
+      }
+    }
+    return urlMap;
+  } catch (err) {
+    console.error("Failed to batch generate signed photo URLs", err);
+    return {};
+  }
 }
 
 /** Create a new auction */

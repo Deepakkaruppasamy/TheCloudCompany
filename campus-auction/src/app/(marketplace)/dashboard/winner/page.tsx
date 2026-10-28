@@ -20,7 +20,7 @@ export const metadata = {
 
 export default async function WinnerDashboardPage() {
   const user = await requireUser();
-  const transactions = await getMyWonTransactions(user.id);
+  const transactions = await getMyWonTransactions(user.id).catch(() => []);
 
   // Fetch auction details for each transaction
   const items = await Promise.all(

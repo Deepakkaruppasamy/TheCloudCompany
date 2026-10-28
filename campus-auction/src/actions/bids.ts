@@ -20,10 +20,17 @@ export async function placeBid(
 ): Promise<BidResult> {
   await requireUser();
 
+  const rawAmount = formData.get("amountPaise");
+  const rawRupees = formData.get("amountRupees");
+  const amountPaise =
+    rawAmount !== null && rawAmount !== "" && !isNaN(Number(rawAmount))
+      ? Number(rawAmount)
+      : Math.round(Number(rawRupees) * 100);
+
   const raw = {
     auctionId: formData.get("auctionId"),
-    amountPaise: Number(formData.get("amountPaise")),
-    idempotencyKey: formData.get("idempotencyKey"),
+    amountPaise,
+    idempotencyKey: formData.get("idempotencyKey") || crypto.randomUUID(),
   };
 
   const parsed = PlaceBidSchema.safeParse(raw);
@@ -36,16 +43,26 @@ export async function placeBid(
     revalidatePath(`/auctions/${parsed.data.auctionId}`);
     return { ok: true, data: { id: result.id, replayed: result.replayed } };
   } catch (err: unknown) {
-    // Extract Postgres error code from Supabase error
+    console.error("[placeBid] Error:", err);
     const anyErr = err as { code?: string; message?: string; details?: string };
-    const code = anyErr?.code ?? anyErr?.message ?? "";
-    const message = getBidErrorMessage(code);
+
+    // In Supabase PostgREST, custom RAISE EXCEPTION errors have code 'P0001',
+    // while the domain error key ('bid_too_low', 'seller_cannot_bid', etc.) is in message!
+    const errText = [anyErr?.message, anyErr?.code, anyErr?.details]
+      .filter(Boolean)
+      .join(" ");
+
+    let message = getBidErrorMessage(errText);
 
     // Extract minimum required amount from error details if available
     let minRequired: number | undefined;
     if (anyErr?.details) {
       const match = anyErr.details.match(/minimum[:\s]+(\d+)/i);
       if (match) minRequired = parseInt(match[1], 10);
+    }
+
+    if (minRequired && errText.includes("bid_too_low")) {
+      message = `Your bid is too low. Minimum required bid is ₹${(minRequired / 100).toFixed(0)}.`;
     }
 
     return { ok: false, error: message, minRequired };

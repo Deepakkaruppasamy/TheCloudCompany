@@ -25,9 +25,9 @@ export default async function ProfilePage() {
 
   // Fetch relevant activity counts
   const [listings, wonTransactions, sellerTransactions] = await Promise.all([
-    getMyListings(user.id),
-    getMyWonTransactions(user.id),
-    getSellerTransactions(user.id),
+    getMyListings(user.id).catch(() => []),
+    getMyWonTransactions(user.id).catch(() => []),
+    getSellerTransactions(user.id).catch(() => []),
   ]);
 
   const activeListings = listings.filter((l) => l.status === "active").length;

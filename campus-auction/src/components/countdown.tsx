@@ -44,6 +44,7 @@ export default function Countdown({ closesAt, serverNow, className }: CountdownP
 
   return (
     <span
+      suppressHydrationWarning
       className={`font-mono tabular-nums transition-colors ${
         remaining <= 0
           ? "text-white/30"

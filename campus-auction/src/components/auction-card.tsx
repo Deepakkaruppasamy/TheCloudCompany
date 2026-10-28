@@ -16,6 +16,7 @@ type Auction = Database["public"]["Tables"]["auctions"]["Row"];
 interface AuctionCardProps {
   auction: Auction;
   serverNow?: string;
+  photoUrl?: string | null;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -26,7 +27,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   other: "📦",
 };
 
-export default function AuctionCard({ auction, serverNow }: AuctionCardProps) {
+export default function AuctionCard({ auction, serverNow, photoUrl }: AuctionCardProps) {
   const closingSoon = isClosingSoon(auction.closes_at);
   const displayPrice = auction.current_price_paise ?? auction.starting_price_paise;
   const hasActiveBid = auction.current_price_paise !== null;
@@ -39,11 +40,21 @@ export default function AuctionCard({ auction, serverNow }: AuctionCardProps) {
     >
       {/* Top Banner / Image Area */}
       <div className="relative h-48 bg-gradient-to-br from-brand-950/70 via-surface-900 to-black/60 overflow-hidden flex items-center justify-center border-b border-white/[0.06]">
-        <div className="transform group-hover:scale-110 transition-transform duration-500 ease-out select-none">
-          <span className="text-6xl drop-shadow-lg opacity-60 group-hover:opacity-90 transition-opacity">
-            {CATEGORY_ICONS[auction.category] ?? "📦"}
-          </span>
-        </div>
+        {photoUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={photoUrl}
+            alt={auction.title}
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ease-out"
+            loading="lazy"
+          />
+        ) : (
+          <div className="transform group-hover:scale-110 transition-transform duration-500 ease-out select-none">
+            <span className="text-6xl drop-shadow-lg opacity-60 group-hover:opacity-90 transition-opacity">
+              {CATEGORY_ICONS[auction.category] ?? "📦"}
+            </span>
+          </div>
+        )}
 
         {/* Ambient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0e15] via-transparent to-black/30 pointer-events-none" />

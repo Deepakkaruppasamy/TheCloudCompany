@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth/session";
 import { getNotifications } from "@/data/notifications";
 import NotificationItem from "./_notification-item";
+import BrowserNotifications from "@/components/browser-notifications";
 import { IconBell } from "@/components/ui/icons";
 
 export const metadata = {
@@ -9,7 +10,7 @@ export const metadata = {
 
 export default async function NotificationsPage() {
   const user = await requireUser();
-  const notifications = await getNotifications(user.id);
+  const notifications = await getNotifications(user.id).catch(() => []);
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
   return (
@@ -27,6 +28,8 @@ export default async function NotificationsPage() {
           </span>
         )}
       </div>
+
+      <BrowserNotifications userId={user.id} variant="banner" />
 
       {notifications.length === 0 ? (
         <div className="glass p-16 text-center text-white/40 rounded-3xl border border-white/[0.08]">

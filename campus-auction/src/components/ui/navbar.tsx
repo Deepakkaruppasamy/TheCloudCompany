@@ -7,7 +7,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import {
   IconPlus,
@@ -18,8 +17,15 @@ import {
   IconShieldCheck,
 } from "./icons";
 
+export interface NavUser {
+  id: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+}
+
 interface NavBarProps {
-  user: User | null;
+  user: NavUser | null;
 }
 
 export default function NavBar({ user }: NavBarProps) {
@@ -32,9 +38,8 @@ export default function NavBar({ user }: NavBarProps) {
     window.location.href = "/sign-in";
   };
 
-  const userRole = user?.user_metadata?.role;
-  const isSeller = userRole === "seller";
-  const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
+  const isSeller = user?.role === "seller";
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
 
   const navLinks = user
     ? [

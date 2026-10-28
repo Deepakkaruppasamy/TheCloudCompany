@@ -8,6 +8,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth/session";
 import { getMyListings } from "@/data/auctions";
+import { getPhotoSignedUrls } from "@/actions/auctions";
 import {
   isAuctionCancellable,
   isAuctionEditable,
@@ -35,7 +36,9 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default async function MyListingsPage() {
   const user = await requireUser();
-  const listings = await getMyListings(user.id);
+  const listings = await getMyListings(user.id).catch(() => []);
+  const photoPaths = listings.map((l) => l.photo_path).filter(Boolean) as string[];
+  const photoUrls: Record<string, string> = await getPhotoSignedUrls(photoPaths).catch(() => ({}));
 
   const now = new Date();
 
@@ -84,9 +87,18 @@ export default async function MyListingsPage() {
                 className="glass p-5 sm:p-6 rounded-2xl border border-white/[0.08] hover:border-white/[0.15] transition-all"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                  {/* Category Icon */}
-                  <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-2xl shadow-inner">
-                    {CATEGORY_ICONS[listing.category] ?? "📦"}
+                  {/* Category Icon / Photo */}
+                  <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-2xl shadow-inner overflow-hidden">
+                    {listing.photo_path && photoUrls[listing.photo_path] ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={photoUrls[listing.photo_path]}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      CATEGORY_ICONS[listing.category] ?? "📦"
+                    )}
                   </div>
 
                   {/* Info Column */}
