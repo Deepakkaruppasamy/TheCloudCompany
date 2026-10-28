@@ -2,12 +2,12 @@
 /**
  * src/actions/bids.ts
  *
- * Server Action for placing a bid.
+ * Server Action for placing manual and automatic bids.
  */
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { PlaceBidSchema } from "@/lib/validation/bid";
-import { placeBidRpc } from "@/data/bids";
+import { placeBidRpc, setAutoBidRpc } from "@/data/bids";
 import { getAuction } from "@/data/auctions";
 import { createNotification } from "@/data/notifications";
 import { getBidErrorMessage } from "@/domain/bidding";
@@ -75,15 +75,12 @@ export async function placeBid(
     console.error("[placeBid] Error:", err);
     const anyErr = err as { code?: string; message?: string; details?: string };
 
-    // In Supabase PostgREST, custom RAISE EXCEPTION errors have code 'P0001',
-    // while the domain error key ('bid_too_low', 'seller_cannot_bid', etc.) is in message!
     const errText = [anyErr?.message, anyErr?.code, anyErr?.details]
       .filter(Boolean)
       .join(" ");
 
     let message = getBidErrorMessage(errText);
 
-    // Extract minimum required amount from error details if available
     let minRequired: number | undefined;
     if (anyErr?.details) {
       const match = anyErr.details.match(/minimum[:\s]+(\d+)/i);
@@ -95,5 +92,35 @@ export async function placeBid(
     }
 
     return { ok: false, error: message, minRequired };
+  }
+}
+
+export async function setAutoBidAction(
+  _prevState: any,
+  formData: FormData
+): Promise<{ ok: true; data: any } | { ok: false; error: string }> {
+  try {
+    await requireUser();
+    const auctionId = formData.get("auctionId") as string;
+    const maxRupeesStr = formData.get("maxRupees") as string;
+    const maxRupees = parseFloat(maxRupeesStr);
+
+    if (!maxRupees || isNaN(maxRupees) || maxRupees <= 0) {
+      return { ok: false, error: "Please enter a valid maximum bid amount." };
+    }
+
+    const maxAmountPaise = Math.round(maxRupees * 100);
+    const res = await setAutoBidRpc({ auctionId, maxAmountPaise });
+    revalidatePath(`/auctions/${auctionId}`);
+    return { ok: true, data: res };
+  } catch (err: any) {
+    const msg = err?.message || "Failed to set automatic bid.";
+    if (msg.includes("auto_bid_too_low")) {
+      return { ok: false, error: "Your maximum bid must be at least the starting price / next minimum increment." };
+    }
+    if (msg.includes("seller_cannot_bid")) {
+      return { ok: false, error: "Sellers cannot bid on their own listings." };
+    }
+    return { ok: false, error: msg };
   }
 }

@@ -251,6 +251,28 @@ export interface Database {
           updated_at?: string;
         };
       };
+      auto_bids: {
+        Row: {
+          id: string;
+          auction_id: string;
+          bidder_id: string;
+          max_amount_paise: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id: string;
+          bidder_id: string;
+          max_amount_paise: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          max_amount_paise?: number;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       public_profiles: {
@@ -384,6 +406,10 @@ export interface Database {
       match_saved_searches_for_auction: {
         Args: { p_auction_id: string };
         Returns: number;
+      };
+      set_auto_bid: {
+        Args: { auction_id: string; max_amount_paise: number };
+        Returns: Json;
       };
     };
     Enums: Record<string, never>;

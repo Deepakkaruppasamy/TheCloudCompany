@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAuction, getSellerDisplayName, autoCloseIfExpired } from "@/data/auctions";
-import { getBidHistory } from "@/data/bids";
+import { getBidHistory, getMyAutoBid } from "@/data/bids";
 import { getTransactionByAuction } from "@/data/transactions";
 import { getUser } from "@/lib/auth/session";
 import { getPhotoSignedUrl } from "@/actions/auctions";
@@ -70,12 +70,13 @@ export default async function AuctionDetailPage({ params }: PageProps) {
     auction = (await getAuction(id)) ?? auction;
   }
 
-  const [bids, sellerName, transaction, photoUrl, questions] = await Promise.all([
+  const [bids, sellerName, transaction, photoUrl, questions, myAutoBid] = await Promise.all([
     getBidHistory(id).catch(() => []),
     getSellerDisplayName(auction.seller_id).catch(() => null),
     getTransactionByAuction(id).catch(() => null),
     auction.photo_path ? getPhotoSignedUrl(auction.photo_path).catch(() => null) : Promise.resolve(null),
     getAuctionQuestions(id).catch(() => []),
+    user ? getMyAutoBid(id).catch(() => null) : Promise.resolve(null),
   ]);
 
   const now = new Date();
@@ -205,7 +206,7 @@ export default async function AuctionDetailPage({ params }: PageProps) {
               auctionId={auction.id}
               sellerId={auction.seller_id}
               currentUserId={user?.id}
-              isSeller={isSeller}
+                                isSeller={isSeller}
               questions={questions}
               isAuctionActive={auction.status === "active"}
             />
@@ -278,6 +279,7 @@ export default async function AuctionDetailPage({ params }: PageProps) {
                   minimumIncrementPaise={auction.minimum_increment_paise}
                   sellerId={auction.seller_id}
                   currentUserId={user?.id}
+                  initialAutoBidMaxPaise={myAutoBid}
                 />
               </div>
             )}
