@@ -66,7 +66,7 @@ BEGIN
     SELECT bidder_id, id INTO v_prev_leader_id, v_prev_leader_bid_id
     FROM bids
     WHERE bids.auction_id = place_bid.auction_id
-    ORDER BY amount_paise DESC, placed_at ASC, id ASC
+    ORDER BY bids.amount_paise DESC, bids.placed_at ASC, bids.id ASC
     LIMIT 1;
   END IF;
 

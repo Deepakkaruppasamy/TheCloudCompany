@@ -73,7 +73,7 @@ BEGIN
   WHERE id = auth.uid();
   
   IF NOT FOUND THEN RETURN TRUE; END IF;
-  RETURN COALESCE(v_verified, TRUE) AND COALESCE(v_status, 'active') = 'active';
+  RETURN COALESCE(v_status, 'active') = 'active';
 END;
 $$;
 
