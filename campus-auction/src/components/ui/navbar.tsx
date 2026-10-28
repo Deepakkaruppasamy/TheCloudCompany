@@ -51,9 +51,10 @@ export default function NavBar({ user }: NavBarProps) {
             ]
           : [{ href: "/dashboard/winner", label: "Won Items" }]),
         { href: "/saved-searches", label: "Alerts" },
+        { href: "/assistant", label: "AI Assistant" },
         { href: "/notifications", label: "Notifications" },
       ]
-    : [{ href: "/", label: "Browse" }];
+    : [{ href: "/", label: "Browse" }, { href: "/assistant", label: "AI Assistant" }];
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0b0c10]/80 backdrop-blur-xl">
