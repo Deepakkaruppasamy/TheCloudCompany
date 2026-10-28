@@ -28,3 +28,4 @@ describe("AI Assistant Intent Parser", () => {
     expect(res.intent).toBe("general_help");
   });
 });
+

@@ -269,3 +269,4 @@ export default function AssistantChat() {
     </div>
   );
 }
+

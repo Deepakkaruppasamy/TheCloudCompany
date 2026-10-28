@@ -378,3 +378,4 @@ GRANT EXECUTE ON FUNCTION place_bid(UUID, BIGINT, UUID) TO authenticated;
 
 -- Refresh schema cache
 NOTIFY pgrst, 'reload schema';
+

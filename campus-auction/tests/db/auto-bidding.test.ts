@@ -176,3 +176,4 @@ describe("Automatic Proxy Bidding DB Integration", () => {
     expect(visibleAutoBids?.every((r) => r.bidder_id === bidder2UserId)).toBe(true);
   });
 });
+
