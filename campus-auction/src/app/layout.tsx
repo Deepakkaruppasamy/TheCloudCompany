@@ -6,6 +6,9 @@ import BrowserNotifications from "@/components/browser-notifications";
 import { IconShieldCheck } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://thecloudcompany.onrender.com"
+  ),
   title: {
     template: "%s | Campus Auction",
     default: "Campus Auction — Transparent Peer-to-Peer Campus Marketplace",

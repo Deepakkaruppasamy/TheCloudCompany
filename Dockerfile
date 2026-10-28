@@ -19,14 +19,14 @@ COPY campus-auction/ ./
 # Build-time environment arguments (with defaults for static analysis / container builds)
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_APP_URL=https://thecloudcompany.onrender.com
 ARG DEMO_MODE=false
 ARG SELLER_RESPONSE_HOURS=24
 ARG PICKUP_HOURS=48
 
 ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://placeholder.supabase.co}
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-placeholder-anon-key}
-ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:10000}
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://thecloudcompany.onrender.com}
 ENV DEMO_MODE=${DEMO_MODE}
 ENV SELLER_RESPONSE_HOURS=${SELLER_RESPONSE_HOURS}
 ENV PICKUP_HOURS=${PICKUP_HOURS}
@@ -63,3 +63,4 @@ USER nextjs
 EXPOSE 10000
 
 CMD ["node", "server.js"]
+

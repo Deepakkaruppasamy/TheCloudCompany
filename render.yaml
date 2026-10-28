@@ -21,6 +21,8 @@ services:
         value: "24"
       - key: PICKUP_HOURS
         value: "48"
+      - key: NEXT_PUBLIC_APP_URL
+        value: "https://thecloudcompany.onrender.com"
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -29,3 +31,4 @@ services:
         sync: false
       - key: RECONCILE_SECRET
         generateValue: true
+

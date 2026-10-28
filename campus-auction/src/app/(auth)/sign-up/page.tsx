@@ -35,10 +35,17 @@ export default function SignUpPage() {
     }
 
     const supabase = createClient();
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (typeof window !== "undefined"
+        ? window.location.origin
+        : "https://thecloudcompany.onrender.com");
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: `${appUrl}/auth/callback`,
         data: {
           display_name: displayName.trim(),
           role,

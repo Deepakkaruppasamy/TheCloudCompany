@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",
+      allowedOrigins: [
+        "thecloudcompany.onrender.com",
+        "*.onrender.com",
+        "localhost:3000",
+        "localhost:10000",
+      ],
     },
   },
 };

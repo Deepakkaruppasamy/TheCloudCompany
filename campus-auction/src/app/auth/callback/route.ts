@@ -12,16 +12,23 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
 
+  // Production behind reverse proxy (Render): ensure HTTPS and canonical host
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin);
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       // Redirect to next param (must be a relative path)
       const safeNext = next.startsWith("/") ? next : "/";
-      return NextResponse.redirect(`${origin}${safeNext}`);
+      return NextResponse.redirect(`${baseUrl}${safeNext}`);
     }
   }
 
   // On error, send user back to sign-in with an error indicator
-  return NextResponse.redirect(`${origin}/sign-in?error=auth_callback`);
+  return NextResponse.redirect(`${baseUrl}/sign-in?error=auth_callback`);
 }
