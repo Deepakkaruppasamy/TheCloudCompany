@@ -27,6 +27,8 @@ import StatusBadge from "@/components/status-badge";
 import Countdown from "@/components/countdown";
 import BidForm from "@/components/bid-form";
 import BidHistory from "@/components/bid-history";
+import QuestionsSection from "@/components/questions-section";
+import { getAuctionQuestions } from "@/data/questions";
 import {
   IconClock,
   IconShieldCheck,
@@ -68,11 +70,12 @@ export default async function AuctionDetailPage({ params }: PageProps) {
     auction = (await getAuction(id)) ?? auction;
   }
 
-  const [bids, sellerName, transaction, photoUrl] = await Promise.all([
+  const [bids, sellerName, transaction, photoUrl, questions] = await Promise.all([
     getBidHistory(id).catch(() => []),
     getSellerDisplayName(auction.seller_id).catch(() => null),
     getTransactionByAuction(id).catch(() => null),
     auction.photo_path ? getPhotoSignedUrl(auction.photo_path).catch(() => null) : Promise.resolve(null),
+    getAuctionQuestions(id).catch(() => []),
   ]);
 
   const now = new Date();
@@ -194,6 +197,18 @@ export default async function AuctionDetailPage({ params }: PageProps) {
           {/* Bid History */}
           <div>
             <BidHistory bids={bids} />
+          </div>
+
+          {/* Questions & Answers */}
+          <div>
+            <QuestionsSection
+              auctionId={auction.id}
+              sellerId={auction.seller_id}
+              currentUserId={user?.id}
+              isSeller={isSeller}
+              questions={questions}
+              isAuctionActive={auction.status === "active"}
+            />
           </div>
         </div>
 

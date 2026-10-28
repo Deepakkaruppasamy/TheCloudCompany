@@ -11,6 +11,7 @@ import { listAuctions, getPublicStats, triggerReconcileIfNeeded } from "@/data/a
 import { getPhotoSignedUrls } from "@/actions/auctions";
 import AuctionCard from "@/components/auction-card";
 import Filters from "@/components/filters";
+import AlertMeButton from "@/components/alert-me-button";
 import { CATEGORIES } from "@/lib/validation/auction";
 import { CATEGORY_LABELS } from "@/domain/auctions";
 import { IconShieldCheck, IconClock, IconTag, IconPlus } from "@/components/ui/icons";
@@ -181,15 +182,18 @@ export default async function BrowsePage({ searchParams }: PageProps) {
 
       {/* Active Filter Query Feedback */}
       {(category || condition || search || closingSoon) && (
-        <div className="flex items-center justify-between text-white/50 text-xs mb-4 px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-white/50 text-xs mb-4 px-1">
           <p>
             Showing <span className="text-white font-medium">{total}</span> auction{total !== 1 ? "s" : ""}
             {search ? ` matching "${search}"` : ""}
             {category ? ` in ${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] ?? category}` : ""}
           </p>
-          <Link href="/" className="text-brand-300 hover:text-brand-200 underline">
-            Clear all
-          </Link>
+          <div className="flex items-center gap-3">
+            <AlertMeButton keyword={search} category={category} />
+            <Link href="/" className="text-brand-300 hover:text-brand-200 underline">
+              Clear all
+            </Link>
+          </div>
         </div>
       )}
 
@@ -208,11 +212,14 @@ export default async function BrowsePage({ searchParams }: PageProps) {
                 ? "Try broadening your filters or clearing search terms."
                 : "No items are currently listed. Be the first to create one!"}
             </p>
-            <div className="flex gap-3 flex-wrap justify-center">
+            <div className="flex gap-3 flex-wrap justify-center items-center">
               {(search || category || condition || closingSoon) && (
-                <Link href="/" className="btn btn-secondary btn-md">
-                  Reset Filters
-                </Link>
+                <>
+                  <AlertMeButton keyword={search} category={category} />
+                  <Link href="/" className="btn btn-secondary btn-md">
+                    Reset Filters
+                  </Link>
+                </>
               )}
               <Link href="/auctions/new" className="btn btn-primary btn-md">
                 + List an Item

@@ -144,7 +144,16 @@ export interface Database {
             | "handover_completed"
             | "auction_cancelled"
             | "outbid"
-            | "closing_soon";
+            | "closing_soon"
+            | "listing_created"
+            | "listing_updated"
+            | "bid_placed"
+            | "bid_received"
+            | "question_asked"
+            | "question_answered"
+            | "saved_search_match"
+            | "auction_extended"
+            | "proxy_outbid";
           auction_id: string | null;
           transaction_id: string | null;
           bid_id: string | null;
@@ -178,12 +187,88 @@ export interface Database {
         Insert: never;
         Update: never;
       };
+      auction_questions: {
+        Row: {
+          id: string;
+          auction_id: string;
+          asker_id: string;
+          question: string;
+          answer: string | null;
+          answered_at: string | null;
+          is_hidden: boolean;
+          hidden_reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          auction_id: string;
+          asker_id: string;
+          question: string;
+          answer?: string | null;
+          answered_at?: string | null;
+          is_hidden?: boolean;
+          hidden_reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          answer?: string | null;
+          answered_at?: string | null;
+          is_hidden?: boolean;
+          hidden_reason?: string | null;
+        };
+      };
+      saved_searches: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          keyword: string;
+          category: string | null;
+          max_price_paise: number | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          keyword: string;
+          category?: string | null;
+          max_price_paise?: number | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          keyword?: string;
+          category?: string | null;
+          max_price_paise?: number | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       public_profiles: {
         Row: {
           id: string;
           display_name: string;
+        };
+      };
+      auction_questions_public: {
+        Row: {
+          id: string;
+          auction_id: string;
+          asker_display_name: string;
+          question: string;
+          answer: string | null;
+          answered_at: string | null;
+          is_hidden: boolean;
+          hidden_reason: string | null;
+          created_at: string;
+          asker_id: string;
         };
       };
       bid_history: {
@@ -264,6 +349,39 @@ export interface Database {
       is_eligible_user: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      ask_question: {
+        Args: { auction_id: string; question: string };
+        Returns: string;
+      };
+      answer_question: {
+        Args: { question_id: string; answer: string };
+        Returns: void;
+      };
+      hide_question: {
+        Args: { question_id: string; reason: string };
+        Returns: void;
+      };
+      create_saved_search: {
+        Args: {
+          name: string;
+          keyword: string;
+          category?: string | null;
+          max_price_paise?: number | null;
+        };
+        Returns: string;
+      };
+      delete_saved_search: {
+        Args: { saved_search_id: string };
+        Returns: void;
+      };
+      toggle_saved_search: {
+        Args: { saved_search_id: string; is_active: boolean };
+        Returns: void;
+      };
+      match_saved_searches_for_auction: {
+        Args: { p_auction_id: string };
+        Returns: number;
       };
     };
     Enums: Record<string, never>;

@@ -6,7 +6,7 @@ CREATE TABLE saved_searches (
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL CHECK (char_length(btrim(name)) BETWEEN 1 AND 100),
   keyword TEXT NOT NULL CHECK (char_length(btrim(keyword)) BETWEEN 2 AND 100),
-  category TEXT NULL CHECK (category IS NULL OR category IN ('electronics', 'textbooks', 'cycles', 'lab_gear', 'miscellaneous')),
+  category TEXT NULL CHECK (category IS NULL OR category IN ('cycle', 'calculator', 'books', 'electronics', 'other')),
   max_price_paise BIGINT NULL CHECK (max_price_paise IS NULL OR max_price_paise > 0),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
@@ -83,7 +83,7 @@ BEGIN
 
   IF category IS NOT NULL THEN
     v_clean_category := btrim(category);
-    IF v_clean_category NOT IN ('electronics', 'textbooks', 'cycles', 'lab_gear', 'miscellaneous') THEN
+    IF v_clean_category NOT IN ('cycle', 'calculator', 'books', 'electronics', 'other') THEN
       RAISE EXCEPTION 'invalid_category';
     END IF;
   ELSE
