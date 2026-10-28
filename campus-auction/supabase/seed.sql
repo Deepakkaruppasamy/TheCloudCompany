@@ -1,0 +1,2 @@
+-- Non-auth reference data seed (system_config will be seeded by sync-config.ts)
+-- This file intentionally minimal; demo data is seeded via scripts/seed-demo.ts

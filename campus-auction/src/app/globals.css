@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface-950 text-white font-sans antialiased;
+    background-image: radial-gradient(
+        ellipse 80% 50% at 50% -20%,
+        hsl(265 68% 14% / 0.6),
+        transparent
+      ),
+      radial-gradient(
+        ellipse 50% 40% at 80% 80%,
+        hsl(265 82% 8% / 0.4),
+        transparent
+      );
+    min-height: 100vh;
+  }
+
+  * {
+    border-color: theme('colors.white / 10%');
+  }
+
+  ::selection {
+    @apply bg-brand-600 text-white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-600;
+  }
+}
+
+@layer components {
+  /* ── Glass card ─────────────────────────────────────────────────────────── */
+  .glass {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl;
+  }
+
+  .glass-hover {
+    @apply glass transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-xl hover:shadow-brand-900/30;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950 disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-500 hover:bg-brand-400 text-white shadow-lg shadow-brand-900/50 hover:shadow-brand-800/60 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/25;
+  }
+
+  .btn-accent {
+    @apply btn bg-accent-500 hover:bg-accent-400 text-white shadow-lg shadow-accent-600/30 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply btn text-white/70 hover:text-white hover:bg-white/10;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 hover:border-red-500/50;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .btn-md {
+    @apply px-5 py-2.5 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* ── Form inputs ─────────────────────────────────────────────────────────── */
+  .input {
+    @apply w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-500 focus:bg-white/10 transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-red-500/60 focus:border-red-400;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-white/70 mb-1.5;
+  }
+
+  .field-error {
+    @apply text-sm text-red-400 mt-1;
+  }
+
+  /* ── Badge ───────────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-active {
+    @apply badge bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30;
+  }
+
+  .badge-closing-soon {
+    @apply badge bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30 animate-pulse-soft;
+  }
+
+  .badge-unsold {
+    @apply badge bg-white/10 text-white/50 ring-1 ring-white/20;
+  }
+
+  .badge-pending {
+    @apply badge bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30;
+  }
+
+  .badge-reserved {
+    @apply badge bg-purple-500/20 text-purple-400 ring-1 ring-purple-500/30;
+  }
+
+  .badge-completed {
+    @apply badge bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30;
+  }
+
+  .badge-rejected {
+    @apply badge bg-red-500/20 text-red-400 ring-1 ring-red-500/30;
+  }
+
+  .badge-cancelled {
+    @apply badge bg-white/10 text-white/40 ring-1 ring-white/10;
+  }
+
+  /* ── Auction card ────────────────────────────────────────────────────────── */
+  .auction-card {
+    @apply glass-hover flex flex-col overflow-hidden cursor-pointer animate-fade-in;
+  }
+
+  /* ── Section headings ────────────────────────────────────────────────────── */
+  .section-title {
+    @apply text-2xl font-display font-bold text-white;
+  }
+
+  .section-subtitle {
+    @apply text-white/50 text-sm;
+  }
+
+  /* ── Page container ──────────────────────────────────────────────────────── */
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+
+  /* ── Divider ─────────────────────────────────────────────────────────────── */
+  .divider {
+    @apply border-t border-white/10 my-6;
+  }
+
+  /* ── Skeleton shimmer ────────────────────────────────────────────────────── */
+  .skeleton {
+    @apply bg-white/5 rounded-lg relative overflow-hidden;
+    background: linear-gradient(
+      90deg,
+      hsl(265 20% 12% / 1) 25%,
+      hsl(265 30% 18% / 1) 50%,
+      hsl(265 20% 12% / 1) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* ── Alert/toast ─────────────────────────────────────────────────────────── */
+  .alert-error {
+    @apply flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-sm;
+  }
+
+  .alert-success {
+    @apply flex items-start gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-sm;
+  }
+
+  .alert-info {
+    @apply flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-sm;
+  }
+}
