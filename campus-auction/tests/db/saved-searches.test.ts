@@ -197,3 +197,4 @@ describe("Saved Searches & Alerts DB Integration", () => {
     expect(checkRow?.length).toBe(0);
   });
 });
+

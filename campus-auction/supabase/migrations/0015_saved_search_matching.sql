@@ -74,3 +74,4 @@ DROP TRIGGER IF EXISTS trg_match_saved_searches ON auctions;
 CREATE TRIGGER trg_match_saved_searches
   AFTER INSERT OR UPDATE OF status ON auctions
   FOR EACH ROW EXECUTE FUNCTION trg_auction_saved_search_matcher();
+

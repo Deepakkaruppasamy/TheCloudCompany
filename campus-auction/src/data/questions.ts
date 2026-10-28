@@ -17,6 +17,28 @@ export async function getAuctionQuestions(auctionId: string): Promise<QuestionVi
     .order("created_at", { ascending: true });
 
   if (error) {
+    // Resilient fallback: Query base table with joined profiles if view is refreshing in schema cache
+    const fallback = await supabase
+      .from("auction_questions")
+      .select("id, auction_id, question, answer, answered_at, is_hidden, hidden_reason, created_at, asker_id, profiles(display_name)")
+      .eq("auction_id", auctionId)
+      .order("created_at", { ascending: true });
+
+    if (!fallback.error && fallback.data) {
+      return (fallback.data as any[]).map((row) => ({
+        id: row.id,
+        auction_id: row.auction_id,
+        asker_display_name: row.profiles?.display_name || "Campus Buyer",
+        question: row.question,
+        answer: row.answer,
+        answered_at: row.answered_at,
+        is_hidden: row.is_hidden,
+        hidden_reason: row.hidden_reason,
+        created_at: row.created_at,
+        asker_id: row.asker_id,
+      }));
+    }
+
     console.error("getAuctionQuestions error:", error.message);
     return [];
   }

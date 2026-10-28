@@ -20,6 +20,8 @@ CREATE INDEX idx_saved_searches_active_category ON saved_searches(category) WHER
 -- Row Level Security
 ALTER TABLE saved_searches ENABLE ROW LEVEL SECURITY;
 
+GRANT ALL ON saved_searches TO authenticated;
+
 CREATE POLICY "Users can manage their own saved searches" ON saved_searches
   FOR ALL TO authenticated
   USING (user_id = auth.uid())

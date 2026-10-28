@@ -12,3 +12,4 @@ ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (type IN
   'question_asked', 'question_answered', 'saved_search_match',
   'auction_extended', 'proxy_outbid'
 ));
+

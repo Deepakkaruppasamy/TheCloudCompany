@@ -51,3 +51,4 @@ describe("Saved Searches Validation Schema", () => {
     expect(res.success).toBe(false);
   });
 });
+

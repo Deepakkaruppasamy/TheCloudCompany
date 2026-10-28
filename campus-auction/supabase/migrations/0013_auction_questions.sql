@@ -45,6 +45,9 @@ SELECT
 FROM auction_questions q
 JOIN profiles p ON p.id = q.asker_id;
 
+GRANT SELECT ON auction_questions TO authenticated;
+GRANT SELECT ON auction_questions_public TO authenticated, anon;
+
 -- Function: ask_question
 CREATE OR REPLACE FUNCTION ask_question(
   auction_id UUID,
@@ -230,3 +233,4 @@ $$;
 
 REVOKE ALL ON FUNCTION hide_question(UUID, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION hide_question(UUID, TEXT) TO authenticated;
+

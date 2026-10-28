@@ -30,3 +30,4 @@ export const HideQuestionSchema = z.object({
 export type AskQuestionInput = z.infer<typeof AskQuestionSchema>;
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionSchema>;
 export type HideQuestionInput = z.infer<typeof HideQuestionSchema>;
+

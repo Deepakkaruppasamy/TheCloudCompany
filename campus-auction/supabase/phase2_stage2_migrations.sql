@@ -67,6 +67,9 @@ SELECT
 FROM auction_questions q
 JOIN profiles p ON p.id = q.asker_id;
 
+GRANT SELECT ON auction_questions TO authenticated;
+GRANT SELECT ON auction_questions_public TO authenticated, anon;
+
 -- Function: ask_question
 CREATE OR REPLACE FUNCTION ask_question(
   auction_id UUID,
@@ -275,6 +278,8 @@ CREATE INDEX IF NOT EXISTS idx_saved_searches_active_category ON saved_searches(
 
 -- Row Level Security
 ALTER TABLE saved_searches ENABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON saved_searches TO authenticated;
 
 DROP POLICY IF EXISTS "Users can manage their own saved searches" ON saved_searches;
 CREATE POLICY "Users can manage their own saved searches" ON saved_searches
@@ -494,3 +499,6 @@ DROP TRIGGER IF EXISTS trg_match_saved_searches ON auctions;
 CREATE TRIGGER trg_match_saved_searches
   AFTER INSERT OR UPDATE OF status ON auctions
   FOR EACH ROW EXECUTE FUNCTION trg_auction_saved_search_matcher();
+
+-- Force Supabase PostgREST API to refresh schema cache immediately
+NOTIFY pgrst, 'reload schema';
