@@ -7,7 +7,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { listAuctions, getPublicStats } from "@/data/auctions";
+import { listAuctions, getPublicStats, triggerReconcileIfNeeded } from "@/data/auctions";
 import { getPhotoSignedUrls } from "@/actions/auctions";
 import AuctionCard from "@/components/auction-card";
 import Filters from "@/components/filters";
@@ -60,6 +60,9 @@ export default async function BrowsePage({ searchParams }: PageProps) {
 
   const pageSize = 12;
   const serverNow = new Date().toISOString();
+
+  // Lazily process any expired auction closures or scan for closing-soon notifications
+  triggerReconcileIfNeeded().catch(() => {});
 
   const [{ auctions, total }, stats] = await Promise.all([
     listAuctions({ category, condition, search, closingSoon }, page, pageSize).catch(() => ({

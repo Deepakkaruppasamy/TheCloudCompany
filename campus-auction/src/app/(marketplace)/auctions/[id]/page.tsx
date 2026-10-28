@@ -7,7 +7,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAuction, getSellerDisplayName } from "@/data/auctions";
+import { getAuction, getSellerDisplayName, autoCloseIfExpired } from "@/data/auctions";
 import { getBidHistory } from "@/data/bids";
 import { getTransactionByAuction } from "@/data/transactions";
 import { getUser } from "@/lib/auth/session";
@@ -58,9 +58,15 @@ export default async function AuctionDetailPage({ params }: PageProps) {
   const { id } = await params;
   const serverNow = new Date().toISOString();
 
-  const [auction, user] = await Promise.all([getAuction(id), getUser()]);
+  const [initialAuction, user] = await Promise.all([getAuction(id), getUser()]);
 
-  if (!auction) notFound();
+  if (!initialAuction) notFound();
+
+  let auction = initialAuction;
+  if (auction.status === "active" && new Date(auction.closes_at) <= new Date()) {
+    await autoCloseIfExpired(auction.id);
+    auction = (await getAuction(id)) ?? auction;
+  }
 
   const [bids, sellerName, transaction, photoUrl] = await Promise.all([
     getBidHistory(id).catch(() => []),

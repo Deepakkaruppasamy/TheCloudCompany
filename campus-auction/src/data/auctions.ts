@@ -5,6 +5,7 @@
  * No UI code; no authorization decisions.
  */
 import { createClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/server/admin";
 import type { Database } from "@/types/database";
 
 type Auction = Database["public"]["Tables"]["auctions"]["Row"];
@@ -165,4 +166,24 @@ export async function getPublicStats(): Promise<{ active_auctions: number }> {
   const { data, error } = await supabase.rpc("public_stats" as any);
   if (error) throw new Error(error.message);
   return data as { active_auctions: number };
+}
+
+/** Trigger periodic reconciliation and auto-close scan for expired auctions */
+export async function triggerReconcileIfNeeded(): Promise<void> {
+  try {
+    const admin = getAdminClient();
+    await (admin as any).rpc("process_expired", { batch_size: 25 });
+  } catch (err) {
+    // Non-blocking background reconcile
+  }
+}
+
+/** If an active auction has passed its closes_at timestamp, trigger immediate closure */
+export async function autoCloseIfExpired(auctionId: string): Promise<void> {
+  try {
+    const admin = getAdminClient();
+    await (admin as any).rpc("close_auction", { auction_id: auctionId });
+  } catch (err) {
+    // Non-blocking
+  }
 }

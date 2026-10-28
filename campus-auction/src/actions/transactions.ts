@@ -11,6 +11,7 @@ import {
   rejectAuctionRpc,
   confirmHandoverRpc,
 } from "@/data/transactions";
+import { createNotification } from "@/data/notifications";
 
 export type TransactionResult =
   | { ok: true }
@@ -19,9 +20,15 @@ export type TransactionResult =
 export async function approveAuction(
   transactionId: string
 ): Promise<TransactionResult> {
-  await requireUser();
+  const user = await requireUser();
   try {
     await approveAuctionRpc(transactionId);
+    await createNotification({
+      recipientId: user.id,
+      type: "seller_approved",
+      message: "You approved the winning bid. The item is reserved for campus handover.",
+      transactionId,
+    });
     revalidatePath("/dashboard/seller");
     return { ok: true };
   } catch (err: unknown) {
@@ -42,7 +49,7 @@ export async function rejectAuction(
   transactionId: string,
   reason: string
 ): Promise<TransactionResult> {
-  await requireUser();
+  const user = await requireUser();
   if (!reason || reason.trim().length === 0) {
     return { ok: false, error: "A reason is required." };
   }
@@ -51,6 +58,12 @@ export async function rejectAuction(
   }
   try {
     await rejectAuctionRpc(transactionId, reason);
+    await createNotification({
+      recipientId: user.id,
+      type: "seller_rejected",
+      message: `You rejected the winning bid. Reason: ${reason}.`,
+      transactionId,
+    });
     revalidatePath("/dashboard/seller");
     return { ok: true };
   } catch (err: unknown) {
@@ -66,9 +79,15 @@ export async function rejectAuction(
 export async function confirmHandover(
   transactionId: string
 ): Promise<TransactionResult> {
-  await requireUser();
+  const user = await requireUser();
   try {
     await confirmHandoverRpc(transactionId);
+    await createNotification({
+      recipientId: user.id,
+      type: "handover_completed",
+      message: "Handover confirmation recorded.",
+      transactionId,
+    });
     revalidatePath("/dashboard/seller");
     revalidatePath("/dashboard/winner");
     return { ok: true };
