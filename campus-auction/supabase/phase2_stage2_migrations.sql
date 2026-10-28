@@ -48,7 +48,7 @@ CREATE POLICY "Allow read questions" ON auction_questions
     is_hidden = FALSE
     OR asker_id = auth.uid()
     OR EXISTS (SELECT 1 FROM auctions a WHERE a.id = auction_questions.auction_id AND a.seller_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.is_admin = TRUE)
+    OR EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
   );
 
 -- View with column-level visibility: Asker display name only (masks phone, email, and internal profile details)
@@ -223,7 +223,7 @@ SET search_path = public, pg_temp AS $$
 DECLARE
   v_actor UUID := auth.uid();
   v_seller_id UUID;
-  v_is_admin BOOLEAN;
+  v_role TEXT;
   v_clean_reason TEXT;
 BEGIN
   IF v_actor IS NULL THEN RAISE EXCEPTION 'unauthenticated'; END IF;
@@ -240,9 +240,9 @@ BEGIN
 
   IF NOT FOUND THEN RAISE EXCEPTION 'question_not_found'; END IF;
 
-  SELECT is_admin INTO v_is_admin FROM profiles WHERE id = v_actor;
+  SELECT role INTO v_role FROM profiles WHERE id = v_actor;
 
-  IF v_actor <> v_seller_id AND COALESCE(v_is_admin, FALSE) = FALSE THEN
+  IF v_actor <> v_seller_id AND COALESCE(v_role, '') <> 'admin' THEN
     RAISE EXCEPTION 'not_authorized_to_hide';
   END IF;
 
