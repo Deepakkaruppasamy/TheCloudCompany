@@ -47,7 +47,6 @@ A secure, high-concurrency campus auction marketplace built for university stude
 ### 2. Environment Variables Configuration
 Copy `.env.example` to `.env.local` inside the `campus-auction` directory:
 ```bash
-cd campus-auction
 cp .env.example .env.local
 ```
 
@@ -102,7 +101,7 @@ All migrations are located in `campus-auction/supabase/migrations/`:
 | `0017_auto_bids.sql` | `auto_bids` table with private maximums, `resolve_auto_bids`, `set_auto_bid`. |
 
 > **Single-Click Database Setup:**
-> You can run the entire migration sequence at once by pasting [`campus-auction/supabase/all_migrations.sql`](file:///c:/Hackathon/campus-auction/supabase/all_migrations.sql) into your Supabase Dashboard SQL Editor.
+> You can run the entire migration sequence at once by pasting [`supabase/all_migrations.sql`](file:///c:/Hackathon/campus-auction/supabase/all_migrations.sql) into your Supabase Dashboard SQL Editor.
 
 ---
 
